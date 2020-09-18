@@ -21,7 +21,7 @@ import com.fireflyest.btcontrol.util.CalendarUtil;
 public class EditDeviceDialog extends DialogFragment implements View.OnClickListener  {
 
     public interface NoticeDialogListener {
-        void onDialogDoneClick();
+        void onDialogDoneClick(String name, long progress);
         void onDialogDeleteClick();
     }
 
@@ -80,10 +80,9 @@ public class EditDeviceDialog extends DialogFragment implements View.OnClickList
                 this.dismiss();
                 break;
             case R.id.dialog_device_add:
-                Mode mode = new Mode();
-                mode.setName(nameEdit.getText().toString());
-                mode.setDesc(progressEdit.getText().toString());
-                listener.onDialogDoneClick();
+                String name = nameEdit.getText().toString();
+                long progress = Long.parseLong(progressEdit.getText().toString());
+                listener.onDialogDoneClick(name, progress);
                 this.dismiss();
                 break;
             case R.id.dialog_device_delete_text:

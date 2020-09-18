@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private ImageButton actionButton;
     private DrawerLayout drawerLayout;
     private ViewPager pagerCards;
+    private ViewPager deviceCards;
 
     private BleController bleController;
 
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private SettingManager settingManager;
     private DataManager dataManager;
 
+    //启动页面请求码
     public static final int REQUEST_BLUETOOTH = 2;
     public static final int REQUEST_MODE = 3;
     public static final int REQUEST_COMMAND = 4;
@@ -186,8 +188,27 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     }
 
     @Override
-    public void onDialogDoneClick() {
+    public void onDialogDoneClick(String name, long progress) {
+        final Device device = this.getSelectDevice();
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                dataManager.getDeviceDao().updateAll(device);
+            }
+        }).start();
+
+        device.setName(name);
+        device.setProgress(progress);
+        deviceMap.put(device.getAddress(), device);
+        ToastUtil.showShort(MainActivity.this, "设备已修改");
+        this.getSupportFragmentManager()
+                .beginTransaction()
+                .remove(deviceAdapter.getItem(deviceIndex))
+                .commit();
+        deviceList.remove(deviceIndex);
+        deviceList.add(deviceIndex, DeviceFragment.newInstance(device.getAddress()));
+        deviceAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -268,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         TabLayout pagerTable = findViewById(R.id.main_table);
         pagerTable.setupWithViewPager(pagerCards);
 
-        ViewPager deviceCards = findViewById(R.id.toolbar_viewpager);
+        deviceCards = findViewById(R.id.toolbar_viewpager);
         deviceCards.setOffscreenPageLimit(1);
         if(deviceList.size() == 0) deviceList.add(new BlankFragment());
         deviceAdapter = new CardAdapter(this.getSupportFragmentManager(), deviceList);
@@ -441,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private void addDeviceCard(Device device){
         if(deviceList.size() == 1 && deviceList.get(0) instanceof BlankFragment)deviceList.clear();
 
-        deviceList.add(DeviceFragment.newInstance(device));
+        deviceList.add(DeviceFragment.newInstance(device.getAddress()));
 
         deviceMap.put(device.getAddress(), device);
 

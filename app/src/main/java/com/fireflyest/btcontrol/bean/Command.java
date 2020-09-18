@@ -3,6 +3,9 @@ package com.fireflyest.btcontrol.bean;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+/**
+ * 指令发送与接收记录
+ */
 @Entity
 public class Command {
 

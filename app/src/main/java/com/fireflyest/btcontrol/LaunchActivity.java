@@ -29,10 +29,13 @@ import static java.lang.Thread.sleep;
 
 public class LaunchActivity extends AppCompatActivity {
 
+    //申请权限
     public static final int REQUEST_ENABLE_BT = 1;
 
+    //开启主界面
     public static final int START_ACTIVITY = 2;
 
+    //开始动画
     public static final int START_ANIMATION = 3;
 
     private ConstraintLayout launchBox;
@@ -78,6 +81,7 @@ public class LaunchActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
+                    //已有权限直接开启主界面
                     handler.obtainMessage(START_ANIMATION).sendToTarget();
                     sleep(800);
                     if(permission) handler.obtainMessage(START_ACTIVITY).sendToTarget();

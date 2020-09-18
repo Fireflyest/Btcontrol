@@ -3,6 +3,12 @@ package com.fireflyest.btcontrol.bean;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+/**
+ * 模式
+ * 计划：
+ * 1、 一个设备对应一个模式列表
+ * 2、 由设备控制所需时长
+ */
 @Entity
 public class Mode {
 

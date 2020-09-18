@@ -29,6 +29,7 @@ import com.fireflyest.btcontrol.R;
 import com.fireflyest.btcontrol.api.BleController;
 import com.fireflyest.btcontrol.api.callback.ConnectCallback;
 import com.fireflyest.btcontrol.bean.Device;
+import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.dialog.AddModeDialog;
 import com.fireflyest.btcontrol.dialog.EditDeviceDialog;
@@ -41,10 +42,6 @@ import static java.lang.Thread.sleep;
 public class DeviceFragment extends Fragment {
 
     private static final String KEY_ADDRESS = "address";
-    private static final String KEY_NAME = "name";
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_PROGRESS = "progress";
-    private static final String KEY_CREATE = "create";
 
     private ImageButton connectState;
 
@@ -62,17 +59,13 @@ public class DeviceFragment extends Fragment {
 
     private ConstraintSet boxConstraintSet = new ConstraintSet();
 
-    public static DeviceFragment newInstance(Device device) {
+    public static DeviceFragment newInstance(final String address) {
         DeviceFragment fragment = new DeviceFragment();
-        if(null != device){
-            Bundle bundle = new Bundle();
-            bundle.putString(KEY_ADDRESS, device.getAddress());
-            bundle.putString(KEY_NAME, device.getName());
-            bundle.putString(KEY_TYPE, device.getType());
-            bundle.putLong(KEY_PROGRESS, device.getProgress());
-            bundle.putLong(KEY_CREATE, device.getCreate());
-            fragment.setArguments(bundle);
-        }
+
+
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_ADDRESS, address);
+        fragment.setArguments(bundle);
         return fragment;
     }
 
@@ -97,10 +90,7 @@ public class DeviceFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             address = getArguments().getString(KEY_ADDRESS);
-            name = getArguments().getString(KEY_NAME);
-            type = getArguments().getString(KEY_TYPE);
-            progress = getArguments().getLong(KEY_PROGRESS);
-            create = getArguments().getLong(KEY_CREATE);
+            this.refreshDevice(address);
         }
         bleController = BleController.getInstance();
 
@@ -156,9 +146,9 @@ public class DeviceFragment extends Fragment {
                 if(activity != null){
                     EditDeviceDialog dialog = new EditDeviceDialog();
                     Bundle bundle = new Bundle();
-                    bundle.putString(KEY_NAME, name);
-                    bundle.putLong(KEY_PROGRESS, progress);
-                    bundle.putLong(KEY_CREATE, create);
+                    bundle.putString("name", name);
+                    bundle.putLong("progress", progress);
+                    bundle.putLong("create", create);
                     dialog.setArguments(bundle);
                     dialog.show(getActivity().getSupportFragmentManager(), "Edit device");
                 }
@@ -186,6 +176,9 @@ public class DeviceFragment extends Fragment {
 
     @Override
     public void onResume() {
+
+        this.refreshDevice(address);
+
         if(this.isConnect()){
             ((AnimatedVectorDrawable)connectState.getDrawable()).start();
         }else {
@@ -203,6 +196,20 @@ public class DeviceFragment extends Fragment {
         BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
         if(device != null) return ReflectUtils.invokeIs(device, "connected");
         return false;
+    }
+
+
+    private void refreshDevice(final String address){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Device device = DataManager.getInstance().getDeviceDao().findByAddress(address);
+                name = device.getName();
+                type = device.getType();
+                progress = device.getProgress();
+                create = device.getCreate();
+            }
+        }).start();
     }
 
 }

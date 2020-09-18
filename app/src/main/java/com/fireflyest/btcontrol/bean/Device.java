@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+/**
+ * 已添加的蓝牙设备
+ */
 @Entity
 public class Device {
 

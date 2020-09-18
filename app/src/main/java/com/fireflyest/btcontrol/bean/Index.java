@@ -1,5 +1,8 @@
 package com.fireflyest.btcontrol.bean;
 
+/**
+ * 设备滑动卡片的小点，不存储
+ */
 public class Index {
 
     private boolean select;
