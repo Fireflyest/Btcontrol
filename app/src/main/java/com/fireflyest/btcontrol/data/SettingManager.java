@@ -1,7 +1,6 @@
 package com.fireflyest.btcontrol.data;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
 public class SettingManager implements SharedPreferences.OnSharedPreferenceChangeListener{
 
