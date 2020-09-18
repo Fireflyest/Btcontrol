@@ -129,11 +129,17 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                     @Override
                     public void run() {
                         Device device = deviceMap.get(SettingManager.SELECT_ADDRESS);
-                        if(device != null && mode != null){
-                            device.setMode(Integer.parseInt(mode));
-                            dataManager.getDeviceDao().updateAll(device);
-                            settingManager.setStringPreference("select_address", "none");
-                            settingManager.setStringPreference("select_address", device.getAddress());
+                        if(device != null){
+                            if(mode != null && !mode.equals(SettingManager.CLOSE_CODE)){
+                                device.setMode(Integer.parseInt(mode));
+                                dataManager.getDeviceDao().updateAll(device);
+                                settingManager.setStringPreference("select_address", "none");
+                                settingManager.setStringPreference("select_address", device.getAddress());
+                            }else {
+                                device.setOpen(false);
+                                dataManager.getDeviceDao().updateAll(device);
+                                actionButton.setImageResource(R.drawable.animate_action);
+                            }
                         }
                     }
                 }).start();
@@ -284,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                         offset = 0;
                     }
 
-                    //判断是否回话
+                    //判断是否回滑
                     if(to > page){
                         indexItemAdapter.moveItem(to, to-1);
                         to = to - 1;

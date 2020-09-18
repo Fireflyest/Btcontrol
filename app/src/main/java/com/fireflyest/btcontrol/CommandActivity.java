@@ -36,6 +36,7 @@ import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
 import com.fireflyest.btcontrol.bean.Command;
 import com.fireflyest.btcontrol.bean.Mode;
 import com.fireflyest.btcontrol.data.DataManager;
+import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.util.AnimateUtil;
 import com.fireflyest.btcontrol.util.CalendarUtil;
 import com.fireflyest.btcontrol.util.StatusBarUtil;
@@ -321,15 +322,26 @@ public class CommandActivity extends AppCompatActivity {
                 handler.obtainMessage(ADD_COMMAND, send).sendToTarget();
 
                 Mode m = dataManager.getModeDao().findByCode(command);
-                if(m != null && success){
-                    mode = m.getCode();
-                    Command system = new Command();
-                    system.setText("模式修改: "+command);
-                    system.setType("System");
-                    system.setTime(CalendarUtil.getDate());
-                    system.setSuccess(true);
-                    dataManager.getCommandDao().insertAll(system);
-                    handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
+                if(success){
+                    if(m != null){
+                        mode = m.getCode();
+                        Command system = new Command();
+                        system.setText("模式修改: "+command);
+                        system.setType("System");
+                        system.setTime(CalendarUtil.getDate());
+                        system.setSuccess(true);
+                        dataManager.getCommandDao().insertAll(system);
+                        handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
+                    }else if(SettingManager.CLOSE_CODE.equals(command)){
+                        mode = SettingManager.CLOSE_CODE;
+                        Command system = new Command();
+                        system.setText("设备关闭: "+command);
+                        system.setType("System");
+                        system.setTime(CalendarUtil.getDate());
+                        system.setSuccess(true);
+                        dataManager.getCommandDao().insertAll(system);
+                        handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
+                    }
                 }
 
 //                if(!lastCommand.equals(command) && "Send".equals(type)){
