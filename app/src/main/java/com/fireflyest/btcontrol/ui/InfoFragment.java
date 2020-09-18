@@ -48,6 +48,9 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
 
     private SharedPreferences sharedPreferences;
 
+    private static final int CLEAN_TEXT = 0;
+    private static final int SET_TEXT = 1;
+
     public InfoFragment() {
     }
 
@@ -109,7 +112,13 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            if(msg.what == 0){
+            if(msg.what == SET_TEXT){
+
+                Mode mode = (Mode) msg.obj;
+                modeName.setText(mode.getName());
+                modeDesc.setText(mode.getDesc());
+                modeCode.setText(mode.getCode());
+
                 TransitionManager.beginDelayedTransition(modeBox, transition);
                 modeName.setVisibility(View.VISIBLE);
                 modeDesc.setVisibility(View.VISIBLE);
@@ -118,6 +127,10 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                 TransitionManager.beginDelayedTransition(codeBox, transition);
                 modeCode.setVisibility(View.VISIBLE);
                 codeConstraintSet.applyTo(codeBox);
+            }else if(msg.what == CLEAN_TEXT){
+                modeName.setText("");
+                modeDesc.setText("");
+                modeCode.setText("");
             }
             return true;
         }
@@ -137,20 +150,14 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
             @Override
             public void run() {
                 if("none".equals(address)){
-                    modeName.setText("");
-                    modeDesc.setText("");
-                    modeCode.setText("");
+                    handler.obtainMessage(CLEAN_TEXT).sendToTarget();
                     return;
                 }
                 Device device = DataManager.getInstance().getDeviceDao().findByAddress(address);
                 if(null == device)return;
                 Mode mode = DataManager.getInstance().getModeDao().findByCode(String.format("%s", device.getMode()));
                 if(null != mode){
-                    modeName.setText(mode.getName());
-                    modeDesc.setText(mode.getDesc());
-                    modeCode.setText(mode.getCode());
-
-                    handler.obtainMessage(0).sendToTarget();
+                    handler.obtainMessage(SET_TEXT, mode).sendToTarget();
                 }
 
             }
