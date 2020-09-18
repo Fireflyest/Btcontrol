@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:icon="@drawable/ic_setting"
+        app:key="setting_category"
+        app:title="Setting">
+
+        <SwitchPreferenceCompat
+            app:key="auto_connect"
+            app:title="自动连接"
+            app:defaultValue="false" />
+
+        <SwitchPreferenceCompat
+            app:key="auto_discern"
+            app:title="蓝牙筛选"
+            app:defaultValue="false" />
+
+        <EditTextPreference
+            app:key="close_code"
+            app:title="关闭编码"
+            app:dialogMessage="清输入非零数字编码"
+            app:defaultValue="300" />
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:icon="@drawable/ic_help"
+        app:key="help_category"
+        app:title="Help">
+
+        <Preference
+            app:key="feedback"
+            app:title="发送反馈">
+<!--            <intent-->
+<!--                android:targetPackage="com.fireflyest.btcontrol"-->
+<!--                android:targetClass="com.fireflyest.btcontrol.FeedbackActivity"/>-->
+        </Preference>
+
+        <Preference
+            app:key="version"
+             app:title="版本更新">
+<!--            <intent-->
+<!--                android:targetPackage="com.fireflyest.btcontrol"-->
+<!--                android:targetClass="com.fireflyest.btcontrol.VersionActivity"/>-->
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

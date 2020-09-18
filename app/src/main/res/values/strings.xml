@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">Btcontrol</string>
+    <string name="app_version">1.0.0</string>
+    <string name="app_refresh">刷新</string>
+    <string name="app_done">确定</string>
+    <string name="app_open">开启</string>
+    <string name="app_apply">应用</string>
+    <string name="app_close">关闭</string>
+    <string name="app_delete">删除</string>
+    <string name="app_edit">编辑</string>
+    <string name="app_more">更多</string>
+    <string name="app_zero">0</string>
+    <string name="app_thousand">1000</string>
+    <string name="app_add">+</string>
+    <string name="app_equal">=</string>
+    <string name="app_quest">\?</string>
+    <string name="app_comma">,</string>
+
+    <string name="str_name">名称</string>
+    <string name="str_desc">简介</string>
+    <string name="str_code">编码</string>
+    <string name="str_create">创建时间</string>
+    <string name="str_add">添加</string>
+    <string name="str_progress">需求进度(毫秒)</string>
+
+    <string name="device_empty">设备列表为空</string>
+
+    <string name="menu_bluetooth">蓝牙</string>
+    <string name="menu_setting">设置</string>
+    <string name="menu_alarm">提醒</string>
+
+    <string name="control_command">指令</string>
+    <string name="control_mode">模式</string>
+    <string name="control_code">编码</string>
+    <string name="control_data">操作</string>
+    <string name="control_progress">进度</string>
+    <string name="control_task">定时指令</string>
+    <string name="control_time">连续开启0小时</string>
+    <string name="control_percent">0%</string>
+    <string name="control_record">记录</string>
+
+    <string name="command_send">发送</string>
+    <string name="command_check">循环发送</string>
+    <string name="command_delay">间隔(ms)</string>
+    <string name="command_clear">清理窗口</string>
+
+    <string name="connect_state">状态</string>
+    <string name="connect_connected">已连接的设备</string>
+    <string name="connect_other">设备列表</string>
+    <string name="connect_connected_name">暂无设备连接</string>
+    <string name="connect_connected_address">XX:XX:XX:XX:XX:XX</string>
+    <string name="connect_connect">连接</string>
+    <string name="connect_pair">配对</string>
+    <string name="connect_scan">扫描中</string>
+
+    <string name="mode_add">添加新的模式</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

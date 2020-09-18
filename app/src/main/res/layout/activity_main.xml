@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_coordinator"
+        android:background="@color/background"
+        tools:context=".MainActivity">
+
+        <include layout="@layout/toolbar_main"/>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/foreground"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/main_table"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:theme="@style/layout_theme"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/main_index"
+                        android:layout_width="wrap_content"
+                        android:layout_height="10dp"
+                        app:layout_constraintTop_toTopOf="@+id/main_table"
+                        app:layout_constraintBottom_toBottomOf="@+id/main_table"
+                        app:layout_constraintStart_toEndOf="@+id/main_table"
+                        app:layout_constraintEnd_toStartOf="@+id/main_action"/>
+
+                    <ImageButton
+                        android:id="@+id/main_action"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/animate_action"
+                        android:background="@android:color/transparent"
+                        android:layout_marginEnd="16dp"
+                        android:scaleType="fitCenter"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/main_table"
+                        app:layout_constraintBottom_toBottomOf="@+id/main_table"
+                        android:contentDescription="@string/menu_setting" />
+
+                    <androidx.viewpager.widget.ViewPager
+                        android:id="@+id/main_pager"
+                        android:layout_width="match_parent"
+                        android:layout_height="712dp"
+                        app:layout_constraintTop_toBottomOf="@+id/main_table"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/left_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:theme="@style/layout_theme"
+        app:menu="@menu/menu_left"
+        app:headerLayout="@layout/layout_left_header">
+
+    </com.google.android.material.navigation.NavigationView>
+
+</androidx.drawerlayout.widget.DrawerLayout>
+

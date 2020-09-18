@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_action">
+
+    <target
+        android:name="action"
+        android:animation="@animator/ama_rotate_half"/>
+
+    <target
+        android:name="action_1"
+        android:animation="@animator/ama_action_1"/>
+
+    <target
+        android:name="action_2"
+        android:animation="@animator/ama_action_2"/>
+
+    <target
+        android:name="action_3"
+        android:animation="@animator/ama_action_3"/>
+
+    <target
+        android:name="action_4"
+        android:animation="@animator/ama_action_4"/>
+
+
+</animated-vector>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+
+    <objectAnimator
+        android:duration="300"
+        android:propertyName="pathData"
+        android:valueFrom="M18.58,18.58L29.97,29.97"
+        android:valueTo="M29.01,18.99L19.55,28.45"
+        android:valueType="pathType"/>
+
+</set>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_disconnect">
+
+    <target
+        android:name="connecting"
+        android:animation="@animator/ama_rotate_half"/>
+
+    <target
+        android:name="connect"
+        android:animation="@animator/ama_connect"/>
+
+
+</animated-vector>
