@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.PrimaryKey;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.fireflyest.btcontrol.adapter.ModeList.ModeItemAdapter;
 import com.fireflyest.btcontrol.api.BleController;
@@ -39,6 +41,8 @@ public class ModeActivity extends AppCompatActivity implements AddModeDialog.Not
     public static final int UPDATE_LIST = 0;
     public static final int UPDATE_ITEM = 1;
     public static final int BACK_RESULT = 2;
+
+    private boolean connect;
 
     private String mode = "none";
 
@@ -111,7 +115,11 @@ public class ModeActivity extends AppCompatActivity implements AddModeDialog.Not
                     modeList.smoothScrollToPosition(0);
                     break;
                 case BACK_RESULT:
-                    sendCommand(msg.obj.toString());
+                    if(connect){
+                        sendCommand(msg.obj.toString());
+                    }else {
+                        ToastUtil.showShort(ModeActivity.this, "设备未连接");
+                    }
                     break;
                 default:
             }
@@ -130,6 +138,9 @@ public class ModeActivity extends AppCompatActivity implements AddModeDialog.Not
         adapter = new ModeItemAdapter(modes, handler);
         modeList.setAdapter(adapter);
         modeList.setLayoutManager(new GridLayoutManager(this, 2, RecyclerView.VERTICAL, false));
+
+        Intent intent = this.getIntent();
+        connect = intent.getBooleanExtra("connect", false);
 
     }
 

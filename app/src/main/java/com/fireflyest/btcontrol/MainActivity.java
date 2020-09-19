@@ -384,6 +384,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         device.setCreate(CalendarUtil.getDate());
         device.setOpen(false);
         device.setMode(301);
+        device.setProgress(1000*60*60*8);
 
         //关闭原有连接
         bleController.closeBleConnect();

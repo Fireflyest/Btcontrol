@@ -6,7 +6,6 @@ import androidx.room.Insert;
 import androidx.room.Query;
 
 import com.fireflyest.btcontrol.bean.Command;
-
 import java.util.List;
 
 @Dao
@@ -20,6 +19,9 @@ public interface CommandDao {
 
     @Query("SELECT * FROM command WHERE time > :time LIMIT 20")
     List<Command> findByTime(long time);
+
+    @Query("SELECT * FROM command WHERE address like :address LIMIT 20")
+    List<Command> findByAddress(String address);
 
     @Insert
     void insertAll(Command... command);

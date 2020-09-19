@@ -7,6 +7,7 @@ import androidx.room.Room;
 import com.fireflyest.btcontrol.dao.CommandDao;
 import com.fireflyest.btcontrol.dao.DeviceDao;
 import com.fireflyest.btcontrol.dao.ModeDao;
+import com.fireflyest.btcontrol.dao.RecordDao;
 
 public class DataManager {
 
@@ -43,6 +44,10 @@ public class DataManager {
 
     public ModeDao getModeDao(){
         return appDatabase.modeDao();
+    }
+
+    public RecordDao getRecordDao(){
+        return appDatabase.recordDao();
     }
 
 }

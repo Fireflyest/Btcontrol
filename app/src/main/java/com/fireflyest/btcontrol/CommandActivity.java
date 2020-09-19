@@ -77,11 +77,11 @@ public class CommandActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_command);
 
+        this.initBluetooth();
+
         this.initData();
 
         this.initView();
-
-        this.initBluetooth();
 
     }
 
@@ -186,13 +186,17 @@ public class CommandActivity extends AppCompatActivity {
         adapter = new CommandItemAdapter(commands);
         commandList.setAdapter(adapter);
 
-
         sendEdit = findViewById(R.id.command_edit);
         sendButton = findViewById(R.id.command_send);
         moreButton = findViewById(R.id.command_more);
         editBox = findViewById(R.id.command_edit_box);
         editConstraintSet.clone(editBox);
 
+        Intent intent = this.getIntent();
+        boolean connect = intent.getBooleanExtra("connect", false);
+        if(!connect){
+            editBox.setVisibility(View.GONE);
+        }
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -256,7 +260,7 @@ public class CommandActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<Command> all = dataManager.getCommandDao().getAll();
+                List<Command> all = dataManager.getCommandDao().findByAddress(bleController.getAddress());
                 for(Command command : all){
                     handler.obtainMessage(ADD_COMMAND, command).sendToTarget();
                 }
@@ -318,6 +322,7 @@ public class CommandActivity extends AppCompatActivity {
                 send.setType(type);
                 send.setTime(CalendarUtil.getDate());
                 send.setSuccess(success);
+                send.setAddress(bleController.getAddress());
                 dataManager.getCommandDao().insertAll(send);
                 handler.obtainMessage(ADD_COMMAND, send).sendToTarget();
 
@@ -330,6 +335,7 @@ public class CommandActivity extends AppCompatActivity {
                         system.setType("System");
                         system.setTime(CalendarUtil.getDate());
                         system.setSuccess(true);
+                        system.setAddress(bleController.getAddress());
                         dataManager.getCommandDao().insertAll(system);
                         handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
                     }else if(SettingManager.CLOSE_CODE.equals(command)){
@@ -339,6 +345,7 @@ public class CommandActivity extends AppCompatActivity {
                         system.setType("System");
                         system.setTime(CalendarUtil.getDate());
                         system.setSuccess(true);
+                        system.setAddress(bleController.getAddress());
                         dataManager.getCommandDao().insertAll(system);
                         handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
                     }

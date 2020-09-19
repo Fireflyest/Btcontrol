@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,9 @@ import com.fireflyest.btcontrol.CommandActivity;
 import com.fireflyest.btcontrol.MainActivity;
 import com.fireflyest.btcontrol.ModeActivity;
 import com.fireflyest.btcontrol.R;
+import com.fireflyest.btcontrol.api.BleController;
+import com.fireflyest.btcontrol.data.SettingManager;
+import com.fireflyest.btcontrol.util.ToastUtil;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -79,6 +83,12 @@ public class ControlFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), CommandActivity.class);
+                if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
+                    ToastUtil.showShort(view.getContext(), "当前设备未连接");
+                    intent.putExtra("connect", false);
+                }else {
+                    intent.putExtra("connect", true);
+                }
                 Activity activity = getActivity();
                 if(null != activity) activity.startActivityForResult(intent, MainActivity.REQUEST_COMMAND);
             }
@@ -89,6 +99,12 @@ public class ControlFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), ModeActivity.class);
+                if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
+                    ToastUtil.showShort(view.getContext(), "当前设备未连接");
+                    intent.putExtra("connect", false);
+                }else {
+                    intent.putExtra("connect", true);
+                }
                 Activity activity = getActivity();
                 if(null != activity) activity.startActivityForResult(intent, MainActivity.REQUEST_MODE);
             }

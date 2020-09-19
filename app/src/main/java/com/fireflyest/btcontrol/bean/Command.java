@@ -11,6 +11,7 @@ public class Command {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
+    private String address;
     private long time;
     private String type;
     private String text;
@@ -25,6 +26,14 @@ public class Command {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public long getTime() {
