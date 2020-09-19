@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private ImageButton actionButton;
     private DrawerLayout drawerLayout;
     private ViewPager pagerCards;
-    private ViewPager deviceCards;
 
     private BleController bleController;
 
@@ -191,24 +190,24 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     public void onDialogDoneClick(String name, long progress) {
         final Device device = this.getSelectDevice();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                dataManager.getDeviceDao().updateAll(device);
-                handler.obtainMessage(REFRESH_CARDS).sendToTarget();
-            }
-        }).start();
-
-        device.setName(name);
-        device.setProgress(progress);
-        deviceMap.put(device.getAddress(), device);
-        ToastUtil.showShort(MainActivity.this, "设备已修改");
-        this.getSupportFragmentManager()
-                .beginTransaction()
-                .remove(deviceAdapter.getItem(deviceIndex))
-                .commit();
-        deviceList.remove(deviceIndex);
-        deviceList.add(deviceIndex, DeviceFragment.newInstance(device.getAddress()));
+        if(null != device){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    dataManager.getDeviceDao().updateAll(device);
+                    handler.obtainMessage(REFRESH_CARDS).sendToTarget();
+                }
+            }).start();
+            device.setName(name);
+            device.setProgress(progress);
+            ToastUtil.showShort(MainActivity.this, "设备已修改");
+            this.getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(deviceAdapter.getItem(deviceIndex))
+                    .commit();
+            deviceList.remove(deviceIndex);
+            deviceList.add(deviceIndex, DeviceFragment.newInstance(device.getAddress()));
+        }
     }
 
     @Override
@@ -263,12 +262,14 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             @Override
             public void onClick(View v) {
                 Device device = getSelectDevice();
-                if(getSelectDevice().isOpen()){
-                    actionButton.setImageResource(R.drawable.animate_stop);
-                    sendCommand(SettingManager.CLOSE_CODE);
-                }else {
-                    actionButton.setImageResource(R.drawable.animate_action);
-                    sendCommand(String.valueOf(device.getMode()));
+                if(null != device){
+                    if(getSelectDevice().isOpen()){
+                        actionButton.setImageResource(R.drawable.animate_stop);
+                        sendCommand(SettingManager.CLOSE_CODE);
+                    }else {
+                        actionButton.setImageResource(R.drawable.animate_action);
+                        sendCommand(String.valueOf(device.getMode()));
+                    }
                 }
             }
         });
@@ -289,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         TabLayout pagerTable = findViewById(R.id.main_table);
         pagerTable.setupWithViewPager(pagerCards);
 
-        deviceCards = findViewById(R.id.toolbar_viewpager);
+        ViewPager deviceCards = findViewById(R.id.toolbar_viewpager);
         deviceCards.setOffscreenPageLimit(1);
         if(deviceList.size() == 0) deviceList.add(new BlankFragment());
         deviceAdapter = new CardAdapter(this.getSupportFragmentManager(), deviceList);
@@ -423,21 +424,24 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         bleController.writeBuffer(bytes, new OnWriteCallback() {
             @Override
             public void onSuccess() {
-                if(SettingManager.CLOSE_CODE.equals(command)){
-                    ToastUtil.showShort(getBaseContext(), "已关闭");
-                    ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
-                    getSelectDevice().setOpen(false);
-                }else {
-                    ToastUtil.showShort(getBaseContext(), "已开启");
-                    ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
-                    getSelectDevice().setOpen(true);
-                }
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dataManager.getDeviceDao().updateAll(getSelectDevice());
+                Device device = getSelectDevice();
+                if(null != device){
+                    if(SettingManager.CLOSE_CODE.equals(command)){
+                        ToastUtil.showShort(getBaseContext(), "已关闭");
+                        ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
+                        device.setOpen(false);
+                    }else {
+                        ToastUtil.showShort(getBaseContext(), "已开启");
+                        ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
+                        device.setOpen(true);
                     }
-                }).start();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataManager.getDeviceDao().updateAll(getSelectDevice());
+                        }
+                    }).start();
+                }
             }
 
             @Override
@@ -452,6 +456,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
      * @return 设备
      */
     private Device getSelectDevice(){
+        if(deviceMap.size() == 0)return null;
         return (Device)deviceMap.values().toArray()[deviceIndex];
     }
 

@@ -16,10 +16,10 @@ import androidx.transition.TransitionManager;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fireflyest.btcontrol.R;
@@ -27,16 +27,15 @@ import com.fireflyest.btcontrol.bean.Device;
 import com.fireflyest.btcontrol.bean.Mode;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
-import com.fireflyest.btcontrol.util.AnimateUtil;
 
 public class InfoFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener{
-
-    private static final String KEY_CODE = "code";
-    private static final String KEY_ADDRESS = "address";
 
     private TextView modeName;
     private TextView modeDesc;
     private TextView modeCode;
+    private TextView progressText;
+    private TextView progressPercent;
+    private ProgressBar progressBar;
 
     private ConstraintLayout modeBox;
     private ConstraintLayout codeBox;
@@ -48,8 +47,8 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
 
     private SharedPreferences sharedPreferences;
 
-    private static final int CLEAN_TEXT = 0;
-    private static final int SET_TEXT = 1;
+    private static final int CLEAN_VIEW = 0;
+    private static final int REFRESH_VIEW = 1;
 
     public InfoFragment() {
     }
@@ -82,6 +81,12 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
         codeBox = view.findViewById(R.id.control_mode_code_box);
         codeConstraintSet.clone(codeBox);
 
+        progressText = view.findViewById(R.id.control_mode_progress_time);
+        progressPercent = view.findViewById(R.id.control_mode_progress_percent);
+        progressBar = view.findViewById(R.id.control_mode_progress);
+
+
+
 
 //        TextView modeName = view.findViewById(R.id.control_mode_name);
 //        TextView modeName = view.findViewById(R.id.control_mode_name);
@@ -90,7 +95,7 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
 //        TextView modeName = view.findViewById(R.id.control_mode_name);
 
 
-        this.refreshText(SettingManager.SELECT_ADDRESS);
+        this.refreshLayout(SettingManager.SELECT_ADDRESS);
 
 
         super.onViewCreated(view, savedInstanceState);
@@ -99,7 +104,7 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if("select_address".equals(key)) {
-            this.refreshText(sharedPreferences.getString(key, ""));
+            this.refreshLayout(sharedPreferences.getString(key, ""));
         }
     }
 
@@ -109,11 +114,13 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
         super.onDestroy();
     }
 
+    //---------------------------------------------------------------------
+
+
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            if(msg.what == SET_TEXT){
-
+            if(msg.what == REFRESH_VIEW){
                 Mode mode = (Mode) msg.obj;
                 modeName.setText(mode.getName());
                 modeDesc.setText(mode.getDesc());
@@ -127,16 +134,18 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                 TransitionManager.beginDelayedTransition(codeBox, transition);
                 modeCode.setVisibility(View.VISIBLE);
                 codeConstraintSet.applyTo(codeBox);
-            }else if(msg.what == CLEAN_TEXT){
+            }else if(msg.what == CLEAN_VIEW){
                 modeName.setText("");
                 modeDesc.setText("");
                 modeCode.setText("");
+
+                progressBar.setProgress(0);
             }
             return true;
         }
     });
 
-    private void refreshText(final String address){
+    private void refreshLayout(final String address){
 
         TransitionManager.beginDelayedTransition(modeBox, transition);
         modeName.setVisibility(View.GONE);
@@ -150,14 +159,14 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
             @Override
             public void run() {
                 if("none".equals(address)){
-                    handler.obtainMessage(CLEAN_TEXT).sendToTarget();
+                    handler.obtainMessage(CLEAN_VIEW).sendToTarget();
                     return;
                 }
                 Device device = DataManager.getInstance().getDeviceDao().findByAddress(address);
                 if(null == device)return;
                 Mode mode = DataManager.getInstance().getModeDao().findByCode(String.format("%s", device.getMode()));
                 if(null != mode){
-                    handler.obtainMessage(SET_TEXT, mode).sendToTarget();
+                    handler.obtainMessage(REFRESH_VIEW, mode).sendToTarget();
                 }
 
             }

@@ -79,7 +79,7 @@ public class LaunchActivity extends AppCompatActivity {
                 try {
                     //已有权限直接开启主界面
                     handler.obtainMessage(START_ANIMATION).sendToTarget();
-                    sleep(8000);
+                    sleep(800);
                     if(permission) handler.obtainMessage(START_ACTIVITY).sendToTarget();
                 } catch (InterruptedException e) {
                     e.printStackTrace();

@@ -17,6 +17,7 @@
     <string name="app_comma">,</string>
 
     <string name="str_name">名称</string>
+    <string name="str_change">切换</string>
     <string name="str_desc">简介</string>
     <string name="str_code">编码</string>
     <string name="str_create">创建时间</string>

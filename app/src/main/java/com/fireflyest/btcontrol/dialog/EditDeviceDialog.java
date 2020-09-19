@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -81,8 +82,9 @@ public class EditDeviceDialog extends DialogFragment implements View.OnClickList
                 break;
             case R.id.dialog_device_add:
                 String name = nameEdit.getText().toString();
-                long progress = Long.parseLong(progressEdit.getText().toString());
-                listener.onDialogDoneClick(name, progress);
+                String progress = progressEdit.getText().toString();
+                long p = TextUtils.isEmpty(progress) ?0 : Long.parseLong(progress);
+                listener.onDialogDoneClick(name, p);
                 this.dismiss();
                 break;
             case R.id.dialog_device_delete_text:
