@@ -72,6 +72,10 @@ public class CalendarUtil {
         return new SimpleDateFormat(sdf, Locale.CHINA).format(date);
     }
 
+    public static String convertHour(long date){
+        return String.valueOf(date/1000/60/60);
+    }
+
     public static String getTimeNow(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(sdf, Locale.CHINA);
         return simpleDateFormat.format(getDate());

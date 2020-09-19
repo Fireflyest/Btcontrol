@@ -133,14 +133,17 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                         if(device != null){
                             if(mode != null && !mode.equals(SettingManager.CLOSE_CODE)){
                                 device.setMode(Integer.parseInt(mode));
-                                dataManager.getDeviceDao().updateAll(device);
+                                device.setOpen(true);
+                                device.setStart(CalendarUtil.getDate());
+                                device.setEnd(0);
                                 settingManager.setStringPreference("select_address", "none");
                                 settingManager.setStringPreference("select_address", device.getAddress());
                             }else {
                                 device.setOpen(false);
-                                dataManager.getDeviceDao().updateAll(device);
+                                device.setEnd(CalendarUtil.getDate());
                                 actionButton.setImageResource(R.drawable.animate_action);
                             }
+                            dataManager.getDeviceDao().updateAll(device);
                         }
                     }
                 }).start();
@@ -424,21 +427,24 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         bleController.writeBuffer(bytes, new OnWriteCallback() {
             @Override
             public void onSuccess() {
-                Device device = getSelectDevice();
+                final Device device = getSelectDevice();
                 if(null != device){
                     if(SettingManager.CLOSE_CODE.equals(command)){
                         ToastUtil.showShort(getBaseContext(), "已关闭");
                         ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
                         device.setOpen(false);
+                        device.setEnd(CalendarUtil.getDate());
                     }else {
                         ToastUtil.showShort(getBaseContext(), "已开启");
                         ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
                         device.setOpen(true);
+                        device.setStart(CalendarUtil.getDate());
+                        device.setEnd(0);
                     }
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            dataManager.getDeviceDao().updateAll(getSelectDevice());
+                            dataManager.getDeviceDao().updateAll(device);
                         }
                     }).start();
                 }

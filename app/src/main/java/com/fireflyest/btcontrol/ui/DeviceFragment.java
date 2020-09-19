@@ -186,6 +186,10 @@ public class DeviceFragment extends Fragment {
         super.onResume();
     }
 
+
+    //------------------------------------------------------------------------
+
+
     private boolean isConnect(){
         //目前连接地址
         String connecting = BleController.getInstance().getAddress();

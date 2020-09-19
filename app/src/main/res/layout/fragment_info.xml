@@ -74,7 +74,7 @@
             android:layout_marginTop="12dp"
             android:text="@string/control_percent"/>
 
-        <ProgressBar
+        <com.fireflyest.btcontrol.layout.AnimProgress
             android:id="@+id/control_mode_progress"
             android:layout_width="match_parent"
             android:layout_height="8dp"

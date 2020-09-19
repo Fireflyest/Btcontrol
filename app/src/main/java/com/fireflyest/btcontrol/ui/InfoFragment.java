@@ -16,6 +16,7 @@ import androidx.transition.TransitionManager;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +28,14 @@ import com.fireflyest.btcontrol.bean.Device;
 import com.fireflyest.btcontrol.bean.Mode;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
+import com.fireflyest.btcontrol.util.CalendarUtil;
+
+import static java.lang.Thread.sleep;
 
 public class InfoFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener{
+
+    private static final String PROGRESS_TIME = "连续开启%s小时";
+    private static final String PROGRESS_PERCENT = "%s%%";
 
     private TextView modeName;
     private TextView modeDesc;
@@ -48,7 +55,8 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
     private SharedPreferences sharedPreferences;
 
     private static final int CLEAN_VIEW = 0;
-    private static final int REFRESH_VIEW = 1;
+    private static final int REFRESH_MODE = 1;
+    private static final int REFRESH_PROGRESS = 2;
 
     public InfoFragment() {
     }
@@ -85,18 +93,22 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
         progressPercent = view.findViewById(R.id.control_mode_progress_percent);
         progressBar = view.findViewById(R.id.control_mode_progress);
 
-
-
-
-//        TextView modeName = view.findViewById(R.id.control_mode_name);
-//        TextView modeName = view.findViewById(R.id.control_mode_name);
-//        TextView modeName = view.findViewById(R.id.control_mode_name);
-//        TextView modeName = view.findViewById(R.id.control_mode_name);
-//        TextView modeName = view.findViewById(R.id.control_mode_name);
-
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    try {
+                        sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    Device device = DataManager.getInstance().getDeviceDao().findByAddress(SettingManager.SELECT_ADDRESS);
+                    if(null != device) handler.obtainMessage(REFRESH_PROGRESS, device).sendToTarget();
+                }
+            }
+        }).start();
 
         this.refreshLayout(SettingManager.SELECT_ADDRESS);
-
 
         super.onViewCreated(view, savedInstanceState);
     }
@@ -120,26 +132,48 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            if(msg.what == REFRESH_VIEW){
-                Mode mode = (Mode) msg.obj;
-                modeName.setText(mode.getName());
-                modeDesc.setText(mode.getDesc());
-                modeCode.setText(mode.getCode());
+            switch (msg.what){
+                case REFRESH_MODE:
+                    Mode mode = (Mode) msg.obj;
+                    modeName.setText(mode.getName());
+                    modeDesc.setText(mode.getDesc());
+                    modeCode.setText(mode.getCode());
 
-                TransitionManager.beginDelayedTransition(modeBox, transition);
-                modeName.setVisibility(View.VISIBLE);
-                modeDesc.setVisibility(View.VISIBLE);
-                modeConstraintSet.applyTo(modeBox);
+                    TransitionManager.beginDelayedTransition(modeBox, transition);
+                    modeName.setVisibility(View.VISIBLE);
+                    modeDesc.setVisibility(View.VISIBLE);
+                    modeConstraintSet.applyTo(modeBox);
 
-                TransitionManager.beginDelayedTransition(codeBox, transition);
-                modeCode.setVisibility(View.VISIBLE);
-                codeConstraintSet.applyTo(codeBox);
-            }else if(msg.what == CLEAN_VIEW){
-                modeName.setText("");
-                modeDesc.setText("");
-                modeCode.setText("");
+                    TransitionManager.beginDelayedTransition(codeBox, transition);
+                    modeCode.setVisibility(View.VISIBLE);
+                    codeConstraintSet.applyTo(codeBox);
+                    break;
+                case REFRESH_PROGRESS:
+                    Device device = (Device) msg.obj;
 
-                progressBar.setProgress(0);
+                    long progress;
+                    if(device.isOpen()){
+                        progress = CalendarUtil.getDate() - device.getStart();
+                    }else {
+                        progress = device.getEnd() - device.getStart();
+                    }
+                    int percent = (int)(progress/device.getProgress());
+
+                    progressText.setText(String.format(PROGRESS_TIME, CalendarUtil.convertHour(progress)));
+                    progressBar.setProgress(percent);
+                    progressPercent.setText(String.format(PROGRESS_PERCENT, percent));
+
+                    break;
+                case CLEAN_VIEW:
+                    modeName.setText("");
+                    modeDesc.setText("");
+                    modeCode.setText("");
+
+                    progressText.setText(String.format(PROGRESS_TIME, 0));
+                    progressBar.setProgress(0);
+                    progressPercent.setText(String.format(PROGRESS_PERCENT, 0));
+                    break;
+                default:
             }
             return true;
         }
@@ -164,9 +198,10 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                 }
                 Device device = DataManager.getInstance().getDeviceDao().findByAddress(address);
                 if(null == device)return;
+                handler.obtainMessage(REFRESH_PROGRESS, device).sendToTarget();
                 Mode mode = DataManager.getInstance().getModeDao().findByCode(String.format("%s", device.getMode()));
                 if(null != mode){
-                    handler.obtainMessage(REFRESH_VIEW, mode).sendToTarget();
+                    handler.obtainMessage(REFRESH_MODE, mode).sendToTarget();
                 }
 
             }
