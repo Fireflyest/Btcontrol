@@ -195,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             @Override
             public void run() {
                 dataManager.getDeviceDao().updateAll(device);
+                handler.obtainMessage(REFRESH_CARDS).sendToTarget();
             }
         }).start();
 
@@ -208,7 +209,6 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 .commit();
         deviceList.remove(deviceIndex);
         deviceList.add(deviceIndex, DeviceFragment.newInstance(device.getAddress()));
-        deviceAdapter.notifyDataSetChanged();
     }
 
     @Override

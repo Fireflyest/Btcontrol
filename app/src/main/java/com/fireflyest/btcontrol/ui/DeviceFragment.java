@@ -61,8 +61,6 @@ public class DeviceFragment extends Fragment {
 
     public static DeviceFragment newInstance(final String address) {
         DeviceFragment fragment = new DeviceFragment();
-
-
         Bundle bundle = new Bundle();
         bundle.putString(KEY_ADDRESS, address);
         fragment.setArguments(bundle);
