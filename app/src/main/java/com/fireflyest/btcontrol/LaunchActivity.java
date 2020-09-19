@@ -40,7 +40,6 @@ public class LaunchActivity extends AppCompatActivity {
 
     private ConstraintLayout launchBox;
     private TextView launchName;
-    private TextView launchVersion;
 
     private boolean permission = false;
 
@@ -73,9 +72,6 @@ public class LaunchActivity extends AppCompatActivity {
         launchSet.clone(launchBox);
 
         launchName = findViewById(R.id.launch_name);
-        launchVersion = findViewById(R.id.launch_version);
-
-        launchVersion.setText(R.string.app_version);
 
         new Thread(new Runnable() {
             @Override
@@ -83,7 +79,7 @@ public class LaunchActivity extends AppCompatActivity {
                 try {
                     //已有权限直接开启主界面
                     handler.obtainMessage(START_ANIMATION).sendToTarget();
-                    sleep(800);
+                    sleep(8000);
                     if(permission) handler.obtainMessage(START_ACTIVITY).sendToTarget();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -114,7 +110,7 @@ public class LaunchActivity extends AppCompatActivity {
             }else if (msg.what == START_ANIMATION){
                 TransitionManager.beginDelayedTransition(launchBox, transition);
                 launchName.setVisibility(View.VISIBLE);
-                launchVersion.setVisibility(View.VISIBLE);
+                launchSet.setVisibility(R.id.launch_logo, ConstraintSet.VISIBLE);
                 launchSet.applyTo(launchBox);
 
             }
