@@ -17,6 +17,10 @@ public class Record {
 
     private long time;
 
+    private String type;
+
+    private long progress;
+
     public int getId() {
         return id;
     }
@@ -55,5 +59,21 @@ public class Record {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getProgress() {
+        return progress;
+    }
+
+    public void setProgress(long progress) {
+        this.progress = progress;
     }
 }

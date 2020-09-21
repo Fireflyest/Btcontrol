@@ -17,7 +17,6 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,6 +30,7 @@ import com.fireflyest.btcontrol.api.callback.ConnectCallback;
 import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
 import com.fireflyest.btcontrol.bean.Device;
 import com.fireflyest.btcontrol.bean.Index;
+import com.fireflyest.btcontrol.bean.Record;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.dialog.EditDeviceDialog;
@@ -131,18 +131,26 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                     public void run() {
                         Device device = deviceMap.get(SettingManager.SELECT_ADDRESS);
                         if(device != null){
+                            Record record = new Record();
+                            record.setAddress(SettingManager.SELECT_ADDRESS);
+                            record.setTime(CalendarUtil.getDate());
+                            record.setFrom(String.valueOf(device.getMode()));
+                            record.setTo(mode);
                             if(mode != null && !mode.equals(SettingManager.CLOSE_CODE)){
                                 device.setMode(Integer.parseInt(mode));
                                 device.setOpen(true);
                                 device.setStart(CalendarUtil.getDate());
                                 device.setEnd(0);
+                                record.setType("Change");
                                 settingManager.setStringPreference("select_address", "none");
                                 settingManager.setStringPreference("select_address", device.getAddress());
                             }else {
                                 device.setOpen(false);
                                 device.setEnd(CalendarUtil.getDate());
+                                record.setType("Close");
                                 actionButton.setImageResource(R.drawable.animate_action);
                             }
+                            dataManager.getRecordDao().insertAll(record);
                             dataManager.getDeviceDao().updateAll(device);
                         }
                     }
@@ -266,6 +274,10 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             public void onClick(View v) {
                 Device device = getSelectDevice();
                 if(null != device){
+                    if(!device.getAddress().equals(bleController.getAddress())){
+                        ToastUtil.showShort(v.getContext(), "该设备未连接");
+                        return;
+                    }
                     if(getSelectDevice().isOpen()){
                         actionButton.setImageResource(R.drawable.animate_stop);
                         sendCommand(SettingManager.CLOSE_CODE);
@@ -383,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         device.setName("未命名设备");
         device.setCreate(CalendarUtil.getDate());
         device.setOpen(false);
-        device.setMode(301);
+        device.setMode(Integer.parseInt(SettingManager.CLOSE_CODE));
         device.setProgress(1000*60*60*8);
 
         //关闭原有连接
@@ -430,22 +442,32 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             public void onSuccess() {
                 final Device device = getSelectDevice();
                 if(null != device){
+                    final Record record = new Record();
+                    record.setAddress(SettingManager.SELECT_ADDRESS);
+                    record.setTime(CalendarUtil.getDate());
                     if(SettingManager.CLOSE_CODE.equals(command)){
                         ToastUtil.showShort(getBaseContext(), "已关闭");
                         ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
                         device.setOpen(false);
                         device.setEnd(CalendarUtil.getDate());
+                        record.setFrom(String.valueOf(device.getMode()));
+                        record.setTo(SettingManager.CLOSE_CODE);
+                        record.setType("Close");
                     }else {
                         ToastUtil.showShort(getBaseContext(), "已开启");
                         ((AnimatedVectorDrawable)actionButton.getDrawable()).start();
                         device.setOpen(true);
                         device.setStart(CalendarUtil.getDate());
                         device.setEnd(0);
+                        record.setTo(String.valueOf(device.getMode()));
+                        record.setFrom(SettingManager.CLOSE_CODE);
+                        record.setType("Open");
                     }
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             dataManager.getDeviceDao().updateAll(device);
+                            dataManager.getRecordDao().insertAll(record);
                         }
                     }).start();
                 }

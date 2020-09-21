@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/main_coordinator"
-        android:background="@color/background"
         tools:context=".MainActivity">
 
         <include layout="@layout/toolbar_main"/>
@@ -19,6 +18,7 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/foreground"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <LinearLayout
@@ -65,7 +65,7 @@
                     <androidx.viewpager.widget.ViewPager
                         android:id="@+id/main_pager"
                         android:layout_width="match_parent"
-                        android:layout_height="712dp"
+                        android:layout_height="520dp"
                         app:layout_constraintTop_toBottomOf="@+id/main_table"
                         app:layout_constraintBottom_toBottomOf="parent" />
 

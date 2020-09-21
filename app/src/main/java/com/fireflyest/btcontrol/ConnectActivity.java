@@ -213,10 +213,10 @@ public class ConnectActivity extends AppCompatActivity {
                 if(TextUtils.isEmpty(device.getName()))return;
                 if(SettingManager.AUTO_DISCERN
                         && !device.getName().contains("Ai-Thinker")
-                        && !device.getName().contains("BT05-A")
+                        && !device.getName().contains("MLT-BT05")
                 ) return;
 
-                short rssi = -9999;
+                short rssi = -150;
                 Bundle bundle = intent.getExtras();
                 if(bundle != null)rssi = bundle.getShort(BluetoothDevice.EXTRA_RSSI);
 

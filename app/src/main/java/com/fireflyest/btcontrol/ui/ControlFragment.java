@@ -10,6 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,7 +85,7 @@ public class ControlFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), CommandActivity.class);
                 if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
-                    ToastUtil.showShort(view.getContext(), "当前设备未连接");
+                    ToastUtil.showShort(view.getContext(), "该设备未连接");
                     intent.putExtra("connect", false);
                 }else {
                     intent.putExtra("connect", true);
@@ -100,7 +101,7 @@ public class ControlFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), ModeActivity.class);
                 if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
-                    ToastUtil.showShort(view.getContext(), "当前设备未连接");
+                    ToastUtil.showShort(view.getContext(), "该设备未连接");
                     intent.putExtra("connect", false);
                 }else {
                     intent.putExtra("connect", true);

@@ -2,6 +2,7 @@ package com.fireflyest.btcontrol.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.Transition;
 import androidx.transition.TransitionManager;
@@ -24,11 +27,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.fireflyest.btcontrol.R;
+import com.fireflyest.btcontrol.adapter.RecordList.RecordItemAdapter;
 import com.fireflyest.btcontrol.bean.Device;
 import com.fireflyest.btcontrol.bean.Mode;
+import com.fireflyest.btcontrol.bean.Record;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.util.CalendarUtil;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
@@ -42,6 +52,8 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
     private TextView modeCode;
     private TextView progressText;
     private TextView progressPercent;
+    private TextView controlText;
+    private TextView controlTime;
     private ProgressBar progressBar;
 
     private ConstraintLayout modeBox;
@@ -54,9 +66,15 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
 
     private SharedPreferences sharedPreferences;
 
+    private RecordItemAdapter adapter;
+
+    private List<Record> records = new ArrayList<>();
+
     private static final int CLEAN_VIEW = 0;
     private static final int REFRESH_MODE = 1;
     private static final int REFRESH_PROGRESS = 2;
+    private static final int REFRESH_RECORDS = 3;
+    private static final int REFRESH_CONTROL = 4;
 
     public InfoFragment() {
     }
@@ -93,9 +111,18 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
         progressPercent = view.findViewById(R.id.control_mode_progress_percent);
         progressBar = view.findViewById(R.id.control_mode_progress);
 
+        controlText = view.findViewById(R.id.control_mode_code_control);
+        controlTime = view.findViewById(R.id.control_mode_code_control_time);
+
+        final RecyclerView recordList = view.findViewById(R.id.control_mode_record_list);
+        recordList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        adapter = new RecordItemAdapter(records);
+        recordList.setAdapter(adapter);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
+
                 while (true){
                     try {
                         sleep(60000);
@@ -157,7 +184,7 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                     }else {
                         progress = device.getEnd() - device.getStart();
                     }
-                    int percent = (int)(progress/device.getProgress());
+                    int percent = (int)(progress*100/device.getProgress());
 
                     progressText.setText(String.format(PROGRESS_TIME, CalendarUtil.convertHour(progress)));
                     progressBar.setProgress(percent);
@@ -172,6 +199,25 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                     progressText.setText(String.format(PROGRESS_TIME, 0));
                     progressBar.setProgress(0);
                     progressPercent.setText(String.format(PROGRESS_PERCENT, 0));
+                    break;
+                case REFRESH_RECORDS:
+                    adapter.notifyDataSetChanged();
+                    break;
+                case REFRESH_CONTROL:
+                    Record record = (Record) msg.obj;
+                    switch (record.getType()) {
+                        case "Change":
+                            controlText.setText("切换");
+                            break;
+                        case "Close":
+                            controlText.setText("关闭");
+                            break;
+                        case "Open":
+                            controlText.setText("开启");
+                            break;
+                        default:
+                    }
+                    controlTime.setText(CalendarUtil.convertTime(record.getTime()));
                     break;
                 default:
             }
@@ -203,6 +249,19 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
                 if(null != mode){
                     handler.obtainMessage(REFRESH_MODE, mode).sendToTarget();
                 }
+
+                records.clear();
+                List<Record> temp = DataManager.getInstance().getRecordDao().findByAddress(address);
+                Collections.reverse(temp);
+                if(temp.size() > 10){
+                    records.addAll(temp.subList(0, 10));
+                    handler.obtainMessage(REFRESH_CONTROL, temp.get(0)).sendToTarget();
+                }else if(temp.size() > 0){
+                    records.addAll(temp);
+                    handler.obtainMessage(REFRESH_CONTROL, temp.get(0)).sendToTarget();
+                }
+                handler.obtainMessage(REFRESH_RECORDS).sendToTarget();
+
 
             }
         }).start();
