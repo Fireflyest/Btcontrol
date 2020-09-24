@@ -68,7 +68,7 @@ public class IndexItemAdapter extends RecyclerView.Adapter<IndexItemAdapter.View
     }
 
     public void moveItem(int from, int to){
-        if(to >= indices.size() || to < 0)return;
+        if(to >= indices.size() || to < 0 || from > indices.size() || from < 0)return;
         indices.get(from).setSelect(false);
         indices.get(to).setSelect(true);
         this.notifyItemChanged(from);

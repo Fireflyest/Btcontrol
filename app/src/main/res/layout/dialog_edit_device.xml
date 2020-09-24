@@ -46,7 +46,9 @@
         android:hint="@string/str_name"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_device_title"/>
+        app:layout_constraintTop_toBottomOf="@+id/dialog_device_title"
+        android:autofillHints=""
+        android:inputType="text" />
 
     <EditText
         android:id="@+id/dialog_device_progress"
@@ -81,15 +83,13 @@
 
     <TextView
         android:id="@+id/dialog_device_add"
-        android:layout_width="0dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="@string/app_done"
-        android:background="@color/colorPrimaryDark"
-        android:textColor="@color/foreground"
+        android:textColor="@color/colorPrimaryDark"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="@+id/dialog_device_close"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/dialog_device_close"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
@@ -97,14 +97,12 @@
 
     <TextView
         android:id="@+id/dialog_device_close"
-        android:layout_width="0dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="@string/app_close"
-        android:background="@color/colorAccentDark"
-        android:textColor="@color/foreground"
+        android:textColor="@color/colorAccentDark"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@+id/dialog_device_create"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/dialog_device_add"
         android:clickable="true"
         android:focusable="true"

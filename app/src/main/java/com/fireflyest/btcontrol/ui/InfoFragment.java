@@ -125,7 +125,7 @@ public class InfoFragment extends Fragment implements SharedPreferences.OnShared
 
                 while (true){
                     try {
-                        sleep(60000);
+                        sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

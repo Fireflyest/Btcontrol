@@ -17,6 +17,7 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,9 +45,11 @@ import com.fireflyest.btcontrol.util.ToastUtil;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity implements EditDeviceDialog.NoticeDialogListener {
 
@@ -55,11 +58,11 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
 
     private ImageButton actionButton;
     private DrawerLayout drawerLayout;
-    private ViewPager pagerCards;
+    private ViewPager deviceCards;
 
     private BleController bleController;
 
-    private Map<String, Device> deviceMap = new HashMap<>();
+    private Map<String, Device> deviceMap = new LinkedHashMap<>();
     private List<Index> indices = new ArrayList<>();
     private int deviceIndex = 0;
 
@@ -77,6 +80,9 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
 
     public static final int REFRESH_CARDS = 6;
     public static final int REFRESH_PAGER = 7;
+    public static final int REFRESH_INDEX = 8;
+    public static final int SELECT_CARDS = 9;
+
 
 
     @Override
@@ -176,9 +182,14 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 List<Device> devices = dataManager.getDeviceDao().getAll();
                 String address = SettingManager.SELECT_ADDRESS;
                 for(Device device : devices){
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     addDeviceCard(device);
                     if(address.equals(device.getAddress())){
-                        pagerCards.setCurrentItem(devices.indexOf(device));
+                        handler.obtainMessage(SELECT_CARDS, devices.indexOf(device)).sendToTarget();
                         if(device.isOpen()){
                             actionButton.setImageResource(R.drawable.animate_stop);
                         }else {
@@ -251,6 +262,14 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 case REFRESH_PAGER:
                     pagerAdapter.notifyDataSetChanged();
                     break;
+                case REFRESH_INDEX:
+                    Index index = (Index) msg.obj;
+                    indexItemAdapter.addItem(index);
+                    break;
+                case SELECT_CARDS:
+                    int number = (int) msg.obj;
+                    deviceCards.setCurrentItem(number);
+                    break;
                 default:
             }
             return true;
@@ -297,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         indexItemAdapter = new IndexItemAdapter(indices, handler);
         indexList.setAdapter(indexItemAdapter);
 
-        pagerCards = findViewById(R.id.main_pager);
+        ViewPager pagerCards = findViewById(R.id.main_pager);
         pagerList.add(new InfoFragment());
         pagerList.add(new ControlFragment());
         pagerAdapter = new PagerAdapter(this.getSupportFragmentManager(), pagerList);
@@ -305,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         TabLayout pagerTable = findViewById(R.id.main_table);
         pagerTable.setupWithViewPager(pagerCards);
 
-        ViewPager deviceCards = findViewById(R.id.toolbar_viewpager);
+        deviceCards = findViewById(R.id.toolbar_viewpager);
         deviceCards.setOffscreenPageLimit(1);
         if(deviceList.size() == 0) deviceList.add(new BlankFragment());
         deviceAdapter = new CardAdapter(this.getSupportFragmentManager(), deviceList);
@@ -353,8 +372,9 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             @Override
             public void onPageSelected(int position) {
                 if(position < deviceMap.values().size()){
-                    Device device = (Device)deviceMap.values().toArray()[deviceIndex];
+                    Device device = (Device)deviceMap.values().toArray()[position];
                     settingManager.setStringPreference("select_address", device.getAddress());
+                    deviceIndex = position;
                     if(device.isOpen()){
                         actionButton.setImageResource(R.drawable.animate_stop);
                     }else {
@@ -502,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
 
         Index index = new Index();
         index.setSelect(indexItemAdapter.getItemCount() == 0);
-        indexItemAdapter.addItem(index);
+        handler.obtainMessage(REFRESH_INDEX, index).sendToTarget();
 
         handler.obtainMessage(REFRESH_CARDS).sendToTarget();
 
