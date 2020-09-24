@@ -244,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             }
         }).start();
         deviceList.remove(deviceIndex);
+        indices.get(deviceIndex-1).setSelect(true);
+        indexItemAdapter.notifyItemChanged(deviceIndex-1);
         handler.obtainMessage(REFRESH_CARDS).sendToTarget();
     }
 
@@ -313,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         RecyclerView indexList = findViewById(R.id.main_index);
         LinearLayoutManager manager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         indexList.setLayoutManager(manager);
-        indexItemAdapter = new IndexItemAdapter(indices, handler);
+        indexItemAdapter = new IndexItemAdapter(indices);
         indexList.setAdapter(indexItemAdapter);
 
         ViewPager pagerCards = findViewById(R.id.main_pager);
