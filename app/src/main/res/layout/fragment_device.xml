@@ -6,77 +6,71 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.DeviceFragment">
 
-    <androidx.cardview.widget.CardView
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_device_box"
         android:layout_width="match_parent"
         android:layout_height="240dp"
         android:layout_marginTop="86dp"
         android:layout_marginLeft="22dp"
         android:layout_marginRight="22dp"
-        app:cardElevation="2dp"
-        app:cardCornerRadius="16dp">
+        android:background="@drawable/round_white"
+        android:elevation="1dp"
+        android:padding="22dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/main_device_box"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="22dp">
+        <TextView
+            android:id="@+id/main_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/text_emphasis"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/main_device_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:theme="@style/text_emphasis"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/main_device_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/main_device_name"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textStyle="bold"
+            android:text="@string/connect_connected_address"/>
 
-            <TextView
-                android:id="@+id/main_device_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/main_device_name"
-                app:layout_constraintStart_toStartOf="parent"
-                android:textStyle="bold"
-                android:text="@string/connect_connected_address"/>
+        <ImageButton
+            android:id="@+id/main_device_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/animate_connect"
+            android:background="@android:color/transparent"
+            app:layout_constraintTop_toTopOf="@+id/main_device_name"
+            app:layout_constraintBottom_toBottomOf="@+id/main_device_address"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/connect_state" />
 
-            <ImageButton
-                android:id="@+id/main_device_state"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/animate_connect"
-                android:background="@android:color/transparent"
-                app:layout_constraintTop_toTopOf="@+id/main_device_name"
-                app:layout_constraintBottom_toBottomOf="@+id/main_device_address"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:contentDescription="@string/connect_state" />
+        <TextView
+            android:id="@+id/main_device_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-            <TextView
-                android:id="@+id/main_device_type"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/main_device_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/button_primary_style"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toStartOf="@+id/main_device_edit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@string/connect_connect"/>
 
-            <TextView
-                android:id="@+id/main_device_connect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:theme="@style/button_primary_style"
-                android:layout_marginEnd="12dp"
-                app:layout_constraintEnd_toStartOf="@+id/main_device_edit"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:text="@string/connect_connect"/>
+        <TextView
+            android:id="@+id/main_device_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/button_foreground_style"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@string/app_edit"/>
 
-            <TextView
-                android:id="@+id/main_device_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:theme="@style/button_foreground_style"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:text="@string/app_edit"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

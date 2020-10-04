@@ -35,6 +35,7 @@ import com.fireflyest.btcontrol.bean.Record;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.dialog.EditDeviceDialog;
+import com.fireflyest.btcontrol.trans.ZoomOutPageTransformer;
 import com.fireflyest.btcontrol.ui.BlankFragment;
 import com.fireflyest.btcontrol.ui.ControlFragment;
 import com.fireflyest.btcontrol.ui.DeviceFragment;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     public static final int REQUEST_BLUETOOTH = 2;
     public static final int REQUEST_MODE = 3;
     public static final int REQUEST_COMMAND = 4;
+    public static final int REQUEST_ALARM = 4;
 
     public static final int REFRESH_CARDS = 6;
     public static final int REFRESH_PAGER = 7;
@@ -110,8 +112,8 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 this.startActivityForResult(intent, REQUEST_BLUETOOTH);
                 break;
             case R.id.nav_alarm:
-//                intent = new Intent(this, AlarmActivity.class);
-//                this.startActivityForResult(intent, REQUEST_COMMAND);
+                intent = new Intent(this, AlarmActivity.class);
+                this.startActivityForResult(intent, REQUEST_ALARM);
                 break;
             default:
         }
@@ -331,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         if(deviceList.size() == 0) deviceList.add(new BlankFragment());
         deviceAdapter = new CardAdapter(this.getSupportFragmentManager(), deviceList);
         deviceCards.setAdapter(deviceAdapter);
+        deviceCards.setPageTransformer(false, new ZoomOutPageTransformer());
         deviceCards.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             private int page = 0;

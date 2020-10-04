@@ -154,6 +154,7 @@ public class CommandActivity extends AppCompatActivity {
         this.back();
     }
 
+
     //-------------------------------------------------------------------------------
 
 
@@ -195,7 +196,8 @@ public class CommandActivity extends AppCompatActivity {
         Intent intent = this.getIntent();
         boolean connect = intent.getBooleanExtra("connect", false);
         if(!connect){
-            editBox.setVisibility(View.GONE);
+            sendEdit.setEnabled(false);
+            sendButton.setEnabled(false);
         }
 
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -260,7 +262,7 @@ public class CommandActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<Command> all = dataManager.getCommandDao().findByAddress(bleController.getAddress());
+                List<Command> all = dataManager.getCommandDao().findByAddress(SettingManager.SELECT_ADDRESS);
                 for(Command command : all){
                     handler.obtainMessage(ADD_COMMAND, command).sendToTarget();
                 }
