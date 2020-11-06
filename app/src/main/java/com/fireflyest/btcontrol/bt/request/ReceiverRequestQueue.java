@@ -1,8 +1,8 @@
-package com.fireflyest.btcontrol.api.request;
+package com.fireflyest.btcontrol.bt.request;
 
 import android.util.Log;
 
-import com.fireflyest.btcontrol.api.callback.OnReceiverCallback;
+import com.fireflyest.btcontrol.bt.callback.OnReceiverCallback;
 
 import java.util.HashMap;
 

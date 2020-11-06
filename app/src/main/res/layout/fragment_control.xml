@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toStartOf="@+id/control_mode_box"
         android:clickable="true"
         android:focusable="true"
-        android:background="@drawable/primary_light">
+        android:background="@drawable/round_primary_light">
 
         <TextView
             android:id="@+id/control_command_text"
@@ -53,7 +53,7 @@
         app:layout_constraintStart_toEndOf="@+id/control_command_box"
         android:clickable="true"
         android:focusable="true"
-        android:background="@drawable/primary_light">
+        android:background="@drawable/round_primary_light">
 
         <TextView
             android:id="@+id/control_mode_text"
@@ -76,6 +76,41 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/control_mode_light_auto"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="22dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/circle_primary_light"
+        app:layout_constraintTop_toBottomOf="@+id/control_command_box"
+        app:layout_constraintStart_toStartOf="@+id/control_command_box" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/str_int"
+            android:theme="@style/text_bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="22dp"
+        android:background="@drawable/round_primary_light"
+        app:layout_constraintTop_toTopOf="@+id/control_mode_light_auto"
+        app:layout_constraintBottom_toBottomOf="@+id/control_mode_light_auto"
+        app:layout_constraintStart_toEndOf="@+id/control_mode_light_auto"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
 <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
 <!--        android:id="@+id/control_task_box"-->
 <!--        android:layout_width="match_parent"-->
@@ -86,7 +121,7 @@
 <!--        app:layout_constraintBottom_toBottomOf="parent"-->
 <!--        android:clickable="true"-->
 <!--        android:focusable="true"-->
-<!--        android:background="@drawable/primary_light">-->
+<!--        android:background="@drawable/round_primary_light">-->
 
 <!--        <TextView-->
 <!--            android:layout_width="wrap_content"-->

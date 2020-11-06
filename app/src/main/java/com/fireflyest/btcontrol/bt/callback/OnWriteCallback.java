@@ -1,4 +1,4 @@
-package com.fireflyest.btcontrol.api.callback;
+package com.fireflyest.btcontrol.bt.callback;
 
 /**
  * 描述:写操作回调接口

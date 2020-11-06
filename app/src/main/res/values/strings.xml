@@ -11,7 +11,7 @@
     <string name="app_more">更多</string>
     <string name="app_zero">0</string>
     <string name="app_thousand">1000</string>
-    <string name="app_add">+</string>
+    <string name="app_add">添加</string>
     <string name="app_equal">=</string>
     <string name="app_quest">\?</string>
     <string name="app_comma">,</string>
@@ -23,12 +23,23 @@
     <string name="str_create">创建时间</string>
     <string name="str_add">添加</string>
     <string name="str_progress">需求进度(毫秒)</string>
+    <string name="str_int">Int</string>
+
+    <string-array name="str_type_array">
+        <item>低功耗模式</item>
+        <item>配对模式</item>
+    </string-array>
+    <string-array name="int_type_array">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
 
     <string name="device_empty">设备列表为空</string>
 
     <string name="menu_bluetooth">蓝牙</string>
     <string name="menu_setting">设置</string>
-    <string name="menu_alarm">提醒</string>
+    <string name="menu_batch">批量</string>
 
     <string name="control_command">指令</string>
     <string name="control_mode">模式</string>
@@ -46,8 +57,8 @@
     <string name="command_clear">清理窗口</string>
 
     <string name="connect_state">状态</string>
-    <string name="connect_connected">已连接的设备</string>
-    <string name="connect_other">设备列表</string>
+    <string name="connect_connected">当前设备数量</string>
+    <string name="connect_other">设备扫描列表</string>
     <string name="connect_connected_name">暂无设备连接</string>
     <string name="connect_connected_address">XX:XX:XX:XX:XX:XX</string>
     <string name="connect_connect">连接</string>
@@ -55,6 +66,9 @@
     <string name="connect_scan">扫描中</string>
 
     <string name="mode_add">添加新的模式</string>
+
+    <string name="bt_info">蓝牙信息</string>
+    <string name="bt_disconnect">断开</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

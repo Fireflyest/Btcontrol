@@ -1,4 +1,4 @@
-package com.fireflyest.btcontrol.api.request;
+package com.fireflyest.btcontrol.bt.request;
 
 /**
  * 描述:请求队列

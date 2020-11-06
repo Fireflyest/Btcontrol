@@ -25,7 +25,7 @@ public class AddModeDialog extends DialogFragment implements View.OnClickListene
 
     public NoticeDialogListener listener;
 
-    private NumberPicker picker;
+    private EditText code;
     private EditText name;
     private EditText desc;
 
@@ -41,7 +41,7 @@ public class AddModeDialog extends DialogFragment implements View.OnClickListene
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_add_mode, null);
 
-        picker = view.findViewById(R.id.dialog_mode_code);
+        code = view.findViewById(R.id.dialog_mode_code);
         name = view.findViewById(R.id.dialog_mode_name);
         desc = view.findViewById(R.id.dialog_mode_desc);
         TextView add = view.findViewById(R.id.dialog_mode_add);
@@ -49,10 +49,6 @@ public class AddModeDialog extends DialogFragment implements View.OnClickListene
 
         add.setOnClickListener(this);
         close.setOnClickListener(this);
-
-
-        picker.setMinValue(301);
-        picker.setMaxValue(310);
 
         builder.setView(view);
         return builder.create();
@@ -68,7 +64,7 @@ public class AddModeDialog extends DialogFragment implements View.OnClickListene
                 Mode mode = new Mode();
                 mode.setName(name.getText().toString());
                 mode.setDesc(desc.getText().toString());
-                mode.setCode(String.valueOf(picker.getValue()));
+                mode.setCode(code.getText().toString());
                 listener.onDialogAddClick(mode);
                 this.dismiss();
                 break;

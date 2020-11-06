@@ -9,8 +9,6 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +17,7 @@ import com.fireflyest.btcontrol.CommandActivity;
 import com.fireflyest.btcontrol.MainActivity;
 import com.fireflyest.btcontrol.ModeActivity;
 import com.fireflyest.btcontrol.R;
-import com.fireflyest.btcontrol.api.BleController;
+import com.fireflyest.btcontrol.bt.BtManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.util.ToastUtil;
 
@@ -84,7 +82,7 @@ public class ControlFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), CommandActivity.class);
-                if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
+                if(!BtManager.getBtController().isConnected(SettingManager.SELECT_ADDRESS)){
                     ToastUtil.showShort(view.getContext(), "该设备未连接");
                     intent.putExtra("connect", false);
                 }else {
@@ -100,7 +98,7 @@ public class ControlFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(view.getContext(), ModeActivity.class);
-                if(!BleController.getInstance().getAddress().equals(SettingManager.SELECT_ADDRESS)){
+                if(!BtManager.getBtController().isConnected(SettingManager.SELECT_ADDRESS)){
                     ToastUtil.showShort(view.getContext(), "该设备未连接");
                     intent.putExtra("connect", false);
                 }else {

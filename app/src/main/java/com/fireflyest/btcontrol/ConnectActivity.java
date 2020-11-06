@@ -24,9 +24,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.fireflyest.btcontrol.adapter.BluetoothList.BluetoothItemAdapter;
-import com.fireflyest.btcontrol.api.BleController;
+import com.fireflyest.btcontrol.adapter.ConnectedList.ConnectedItemAdapter;
+import com.fireflyest.btcontrol.anim.FallItemAnimator;
 import com.fireflyest.btcontrol.bean.Bluetooth;
+import com.fireflyest.btcontrol.bean.Connected;
+import com.fireflyest.btcontrol.bt.BtManager;
 import com.fireflyest.btcontrol.data.SettingManager;
+import com.fireflyest.btcontrol.dialog.BtinfoDialog;
 import com.fireflyest.btcontrol.util.ReflectUtils;
 import com.fireflyest.btcontrol.util.StatusBarUtil;
 import com.fireflyest.btcontrol.util.ToastUtil;
@@ -34,22 +38,27 @@ import com.fireflyest.btcontrol.util.ToastUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConnectActivity extends AppCompatActivity {
+public class ConnectActivity extends AppCompatActivity implements BtinfoDialog.NoticeDialogListener {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothItemAdapter itemAdapter;
+    private ConnectedItemAdapter connectedItemAdapter;
 
-    private TextView name;
-    private TextView address;
+    private TextView connectState;
+    private TextView connectAmount;
     private ConstraintLayout loading;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private RecyclerView connectedList;
 
     private List<Bluetooth> bluetooths = new ArrayList<>();
+    private List<Connected> connecteds = new ArrayList<>();
+    private List<String> addressList = new ArrayList<>();
 
     private Bluetooth backBluetooth;
 
     public static final int UPDATE_CONNECTION = 1;
     public static final int START_CONNECTION = 2;
+    public static final int SHOW_BT_INFO_DIALOG = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +96,11 @@ public class ConnectActivity extends AppCompatActivity {
         back();
     }
 
+    @Override
+    public void onDialogDisconnectClick() {
+        refreshConnected();
+    }
+
 
 
     private void initData(){
@@ -100,8 +114,8 @@ public class ConnectActivity extends AppCompatActivity {
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
-        name = findViewById(R.id.connect_connected_name);
-        address = findViewById(R.id.connect_connected_address);
+        connectState = findViewById(R.id.connect_connected_name);
+        connectAmount = findViewById(R.id.connect_connected_amount);
         loading = findViewById(R.id.toolbar_connect_scan);
 
         swipeRefreshLayout = findViewById(R.id.connect_refresh);
@@ -112,21 +126,17 @@ public class ConnectActivity extends AppCompatActivity {
             }
         });
 
-        ConstraintLayout connectBox = findViewById(R.id.connect_connected_card);
-        connectBox.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                BleController.getInstance().closeBleConnect();
-                ToastUtil.showShort(ConnectActivity.this,  "已断开连接");
-                refreshConnected();
-                return true;
-            }
-        });
-
         RecyclerView bluetoothList = findViewById((R.id.connect_bluetooth_list));
         bluetoothList.setLayoutManager(new LinearLayoutManager(this));
         itemAdapter = new BluetoothItemAdapter(bluetooths, handler);
         bluetoothList.setAdapter(itemAdapter);
+        bluetoothList.setItemAnimator(new FallItemAnimator());
+
+        connectedList = findViewById(R.id.connect_connected_list);
+        connectedList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        connectedItemAdapter = new ConnectedItemAdapter(connecteds, handler);
+        connectedList.setAdapter(connectedItemAdapter);
+
 
         //刷新按钮
         ImageButton refresh = findViewById(R.id.connect_connected_refresh);
@@ -151,6 +161,14 @@ public class ConnectActivity extends AppCompatActivity {
                     backBluetooth = (Bluetooth) msg.obj;
                     back();
                     break;
+                case SHOW_BT_INFO_DIALOG:
+                    String address = (String) msg.obj;
+                    BtinfoDialog dialog = new BtinfoDialog();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("address", address);
+                    dialog.setArguments(bundle);
+                    dialog.show(getSupportFragmentManager(), "BtinfoDialog");
+                    break;
                 default:
                     break;
             }
@@ -168,6 +186,7 @@ public class ConnectActivity extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(false);
 
         bluetooths.clear();
+        addressList.clear();
         itemAdapter.notifyDataSetChanged();
 
         if (bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
@@ -176,25 +195,26 @@ public class ConnectActivity extends AppCompatActivity {
         //注册广播接收
         registerReceiver(receiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
         registerReceiver(receiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-
-        ToastUtil.showShort(this,  "开始扫描");
     }
 
     /**
      * 刷新已连接的设备
      */
     private void refreshConnected(){
-        //获取全部配对的列表
-        name.setText(R.string.connect_connected_name);
-        address.setText(R.string.connect_connected_address);
-        String connecting = BleController.getInstance().getAddress();
-        if(TextUtils.isEmpty(connecting))return;
-        BluetoothDevice device= bluetoothAdapter.getRemoteDevice(connecting);
-        if(device == null)return;
-        if(!isConnectedDevice(device))return;
-        name.setText(device.getName());
-        address.setText(device.getAddress());
-    }
+
+        List<BluetoothDevice>devices = BtManager.getBtController().getDeviceList();
+        connectState.setText(R.string.connect_connected_name);
+        if(devices.size() > 0){
+            connectState.setText(R.string.connect_connected);
+            connectAmount.setText(String.valueOf(devices.size()));
+            connecteds.clear();
+            for(BluetoothDevice device : devices){
+                connecteds.add(new Connected(device.getName(), device.getAddress(), BtManager.getBtController().isConnected(device.getAddress())));
+            }
+            connectedItemAdapter.notifyDataSetChanged();
+            connectedList.scheduleLayoutAnimation();
+        }
+     }
 
     /**
      * 接收蓝牙广播
@@ -210,19 +230,20 @@ public class ConnectActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 if(device == null)return;
+                if(addressList.contains(device.getAddress()))return;
                 if(TextUtils.isEmpty(device.getName()))return;
                 if(SettingManager.AUTO_DISCERN
                         && !device.getName().contains("Ai-Thinker")
                         && !device.getName().contains("MLT-BT05")
+                        && !device.getName().contains("HC-42")
                 ) return;
 
                 short rssi = -150;
                 Bundle bundle = intent.getExtras();
                 if(bundle != null)rssi = bundle.getShort(BluetoothDevice.EXTRA_RSSI);
 
-                itemAdapter.addItem(new Bluetooth(device.getName(), rssi, device.getAddress(), device.getBondState()));
-
-                handler.obtainMessage(UPDATE_CONNECTION).sendToTarget();
+                addressList.add(device.getAddress());
+                itemAdapter.addItem(new Bluetooth(device.getName(), rssi, device.getAddress(), device.getBondState(), device.getBluetoothClass().getMajorDeviceClass()));
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {//找完
                 loading.setVisibility(View.GONE);

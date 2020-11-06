@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -30,9 +31,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.fireflyest.btcontrol.adapter.CommandList.CommandItemAdapter;
-import com.fireflyest.btcontrol.api.BleController;
-import com.fireflyest.btcontrol.api.callback.OnReceiverCallback;
-import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
+import com.fireflyest.btcontrol.bt.BleController;
+import com.fireflyest.btcontrol.bt.BtManager;
+import com.fireflyest.btcontrol.bt.callback.OnReceiverCallback;
+import com.fireflyest.btcontrol.bt.callback.OnWriteCallback;
 import com.fireflyest.btcontrol.bean.Command;
 import com.fireflyest.btcontrol.bean.Mode;
 import com.fireflyest.btcontrol.data.DataManager;
@@ -60,6 +62,7 @@ public class CommandActivity extends AppCompatActivity {
     private ConstraintLayout circulationBox;
     private EditText circulationEdit;
     private RecyclerView commandList;
+    private RecyclerView moreList;
 
     private ConstraintSet editConstraintSet = new ConstraintSet();
 
@@ -68,9 +71,10 @@ public class CommandActivity extends AppCompatActivity {
     private static final int SEND_COMMAND = 1;
     private static final int ADD_COMMAND = 2;
 
-    private static final String REQUEST_KEY = "BLE";
+    private static String address = "";
 
     private String mode = "none";
+    private long last_time = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +131,10 @@ public class CommandActivity extends AppCompatActivity {
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             View view = getCurrentFocus();
+            if(moreList.getVisibility() == View.VISIBLE){
+                moreButton.setVisibility(View.VISIBLE);
+                moreList.setVisibility(View.GONE);
+            }
             if (isShouldHideInput(view, event)) {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (imm != null) {
@@ -145,7 +153,7 @@ public class CommandActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        bleController.unregisterReceiveListener(REQUEST_KEY);
+        bleController.unregisterReceiveListener(address);
         super.onDestroy();
     }
 
@@ -159,13 +167,12 @@ public class CommandActivity extends AppCompatActivity {
 
 
     private void initBluetooth(){
-        bleController = BleController.getInstance();
-
-        bleController.registerReceiveListener(REQUEST_KEY, new OnReceiverCallback() {
+        address = SettingManager.SELECT_ADDRESS;
+        bleController = (BleController) BtManager.getBtController();
+        bleController.registerReceiveListener(address, new OnReceiverCallback() {
             @Override
             public void onReceive(byte[] value) {
                 String string = new String(value);
-                string = string.substring(0, string.length()-2);
                 addData(string, "Receive", true);
             }
         });
@@ -186,6 +193,8 @@ public class CommandActivity extends AppCompatActivity {
         commandList.setLayoutManager(new LinearLayoutManager(this));
         adapter = new CommandItemAdapter(commands);
         commandList.setAdapter(adapter);
+
+        moreList = findViewById(R.id.command_more_list);
 
         sendEdit = findViewById(R.id.command_edit);
         sendButton = findViewById(R.id.command_send);
@@ -248,9 +257,24 @@ public class CommandActivity extends AppCompatActivity {
         });
 
         moreButton.setOnClickListener(new View.OnClickListener() {
+
+            private Transition transition = new AutoTransition().setDuration(150);
+
             @Override
             public void onClick(View v) {
-                AnimateUtil.click(v, 180);
+                AnimateUtil.click(v, 100);
+                TransitionManager.beginDelayedTransition(editBox, transition);
+                if(moreList.getVisibility() == View.GONE) {
+                    moreList.setVisibility(View.VISIBLE);
+                }else {
+                    moreList.setVisibility(View.GONE);
+                }
+                if(moreButton.getVisibility() == View.GONE) {
+                    moreButton.setVisibility(View.VISIBLE);
+                }else {
+                    moreButton.setVisibility(View.GONE);
+                }
+                editConstraintSet.applyTo(editBox);
             }
         });
 
@@ -295,7 +319,7 @@ public class CommandActivity extends AppCompatActivity {
      */
     private void sendCommand(final String command){
         byte[] bytes = (command).getBytes();
-        bleController.writeBuffer(bytes, new OnWriteCallback() {
+        bleController.writeBuffer(address, bytes, new OnWriteCallback() {
             @Override
             public void onSuccess() {
                 addData(command, "Send", true);
@@ -319,14 +343,28 @@ public class CommandActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Command send = new Command();
-                send.setText(command);
-                send.setType(type);
-                send.setTime(CalendarUtil.getDate());
-                send.setSuccess(success);
-                send.setAddress(bleController.getAddress());
-                dataManager.getCommandDao().insertAll(send);
-                handler.obtainMessage(ADD_COMMAND, send).sendToTarget();
+
+                if(CalendarUtil.getDate() - last_time > 180000L){
+                    Command time = new Command();
+                    time.setText("#");
+                    time.setType("System");
+                    time.setTime(CalendarUtil.getDate());
+                    time.setSuccess(true);
+                    time.setAddress(address);
+                    dataManager.getCommandDao().insertAll(time);
+                    handler.obtainMessage(ADD_COMMAND, time).sendToTarget();
+                }
+                last_time = CalendarUtil.getDate();
+
+                Command data = new Command();
+                data.setText(command);
+                data.setType(type);
+                data.setTime(CalendarUtil.getDate());
+                data.setSuccess(success);
+                data.setAddress(address);
+                Log.e("CommandActivity",  "address ->"+ address);
+                dataManager.getCommandDao().insertAll(data);
+                handler.obtainMessage(ADD_COMMAND, data).sendToTarget();
 
                 Mode m = dataManager.getModeDao().findByCode(command);
                 if(success){
@@ -337,7 +375,7 @@ public class CommandActivity extends AppCompatActivity {
                         system.setType("System");
                         system.setTime(CalendarUtil.getDate());
                         system.setSuccess(true);
-                        system.setAddress(bleController.getAddress());
+                        system.setAddress(address);
                         dataManager.getCommandDao().insertAll(system);
                         handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
                     }else if(SettingManager.CLOSE_CODE.equals(command)){
@@ -347,7 +385,7 @@ public class CommandActivity extends AppCompatActivity {
                         system.setType("System");
                         system.setTime(CalendarUtil.getDate());
                         system.setSuccess(true);
-                        system.setAddress(bleController.getAddress());
+                        system.setAddress(address);
                         dataManager.getCommandDao().insertAll(system);
                         handler.obtainMessage(ADD_COMMAND, system).sendToTarget();
                     }

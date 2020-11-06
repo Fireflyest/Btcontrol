@@ -10,9 +10,9 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/nav_alarm"
-        android:icon="@drawable/ic_alarm"
-        android:title="@string/menu_alarm"
+        android:id="@+id/nav_batch"
+        android:icon="@drawable/ic_batch"
+        android:title="@string/menu_batch"
         app:showAsAction="ifRoom"/>
 
 

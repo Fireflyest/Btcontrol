@@ -3,11 +3,11 @@
     <color name="colorPrimary">#A4CDF1</color>
     <color name="colorPrimaryLight">#EDF7FF</color>
     <color name="colorPrimaryDark">#4165BF</color>
-    <color name="colorAccent">#FDD7E0</color>
-    <color name="colorAccentDark">#F85E80</color>
-    <color name="colorGreen">#DBFDB2</color>
+    <color name="colorAccent">#FAE7EA</color>
+    <color name="colorAccentDark">#DA4968</color>
+    <color name="colorGreen">#DDF6DD</color>
     <color name="colorGreenLight">#F1FAE7</color>
-    <color name="colorGreenDark">#7ED120</color>
+    <color name="colorGreenDark">#75B62A</color>
     <color name="colorYellow">#FAFAB4</color>
     <color name="colorYellowDark">#D8D154</color>
     <color name="background">#F5F6FA</color>

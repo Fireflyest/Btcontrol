@@ -1,5 +1,6 @@
 package com.fireflyest.btcontrol.util;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Color;
@@ -15,21 +16,18 @@ import java.lang.reflect.Method;
 public class StatusBarUtil {
     /**
      * 修改状态栏为全透明
-     *
-     * @param activity
-     */
+     **/
     @TargetApi(19)
     public static void transparencyBar(Activity activity) {
+        Window window = activity.getWindow();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = activity.getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.TRANSPARENT);
 
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Window window = activity.getWindow();
+        } else {
             window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
@@ -39,29 +37,23 @@ public class StatusBarUtil {
      * 状态栏亮色模式，设置状态栏黑色文字、图标，
      * 适配4.4以上版本MIUIV、Flyme和6.0以上版本其他Android
      *
-     * @param activity
-     * @return 1:MIUUI 2:Flyme 3:android6.0
      */
-    public static int StatusBarLightMode(Activity activity) {
+    public static void StatusBarLightMode(Activity activity) {
         int result = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (MIUISetStatusBarLightMode(activity, true)) {
-                result = 1;
-            } else if (FlymeSetStatusBarLightMode(activity.getWindow(), true)) {
-                result = 2;
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                result = 3;
-            }
+        if (MIUISetStatusBarLightMode(activity, true)) {
+            result = 1;
+        } else if (FlymeSetStatusBarLightMode(activity.getWindow(), true)) {
+            result = 2;
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            result = 3;
         }
-        return result;
     }
 
     /**
      * 已知系统类型时，设置状态栏黑色文字、图标。
      * 适配4.4以上版本MIUIV、Flyme和6.0以上版本其他Android
      *
-     * @param activity
      * @param type     1:MIUUI 2:Flyme 3:android6.0
      */
     public static void StatusBarLightMode(Activity activity, int type) {
@@ -119,7 +111,7 @@ public class StatusBarUtil {
                 meizuFlags.setInt(lp, value);
                 window.setAttributes(lp);
                 result = true;
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }
@@ -129,7 +121,6 @@ public class StatusBarUtil {
     /**
      * 需要MIUIV6以上
      *
-     * @param activity
      * @param dark     是否把状态栏文字及图标颜色设置为深色
      * @return boolean 成功执行返回true
      */
@@ -137,10 +128,10 @@ public class StatusBarUtil {
         boolean result = false;
         Window window = activity.getWindow();
         if (window != null) {
-            Class clazz = window.getClass();
+            Class<?> clazz = window.getClass();
             try {
                 int darkModeFlag = 0;
-                Class layoutParams = Class.forName("android.view.MiuiWindowManager$LayoutParams");
+                @SuppressLint("PrivateApi") Class<?> layoutParams = Class.forName("android.view.MiuiWindowManager$LayoutParams");
                 Field field = layoutParams.getField("EXTRA_FLAG_STATUS_BAR_DARK_MODE");
                 darkModeFlag = field.getInt(layoutParams);
                 Method extraFlagField = clazz.getMethod("setExtraFlags", int.class, int.class);
@@ -159,7 +150,7 @@ public class StatusBarUtil {
                         activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
 
             }
         }

@@ -60,7 +60,7 @@ public class Device {
     /**
      * 当前模式
      */
-    private int mode;
+    private String mode;
 
     /**
      * 是否开启
@@ -144,11 +144,11 @@ public class Device {
         this.end = end;
     }
 
-    public int getMode() {
+    public String getMode() {
         return mode;
     }
 
-    public void setMode(int mode) {
+    public void setMode(String mode) {
         this.mode = mode;
     }
 

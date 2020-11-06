@@ -1,4 +1,4 @@
-package com.fireflyest.btcontrol.api.callback;
+package com.fireflyest.btcontrol.bt.callback;
 
 /**
  * 描述:接收设备向手机发送的广播数据

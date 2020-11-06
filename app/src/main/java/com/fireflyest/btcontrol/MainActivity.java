@@ -17,7 +17,6 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,9 +25,10 @@ import android.widget.ImageButton;
 import com.fireflyest.btcontrol.adapter.CardAdapter;
 import com.fireflyest.btcontrol.adapter.IndexList.IndexItemAdapter;
 import com.fireflyest.btcontrol.adapter.PagerAdapter;
-import com.fireflyest.btcontrol.api.BleController;
-import com.fireflyest.btcontrol.api.callback.ConnectCallback;
-import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
+import com.fireflyest.btcontrol.bt.BtController;
+import com.fireflyest.btcontrol.bt.BtManager;
+import com.fireflyest.btcontrol.bt.callback.ConnectStateCallback;
+import com.fireflyest.btcontrol.bt.callback.OnWriteCallback;
 import com.fireflyest.btcontrol.bean.Device;
 import com.fireflyest.btcontrol.bean.Index;
 import com.fireflyest.btcontrol.bean.Record;
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private DrawerLayout drawerLayout;
     private ViewPager deviceCards;
 
-    private BleController bleController;
+    private BtController btController;
 
     private Map<String, Device> deviceMap = new LinkedHashMap<>();
     private List<Index> indices = new ArrayList<>();
@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     public static final int REQUEST_COMMAND = 4;
     public static final int REQUEST_ALARM = 4;
 
+    public static final int CONNECT_CALLBACK = 5;
     public static final int REFRESH_CARDS = 6;
     public static final int REFRESH_PAGER = 7;
     public static final int REFRESH_INDEX = 8;
@@ -111,9 +112,9 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 intent = new Intent(this, ConnectActivity.class);
                 this.startActivityForResult(intent, REQUEST_BLUETOOTH);
                 break;
-            case R.id.nav_alarm:
-                intent = new Intent(this, AlarmActivity.class);
-                this.startActivityForResult(intent, REQUEST_ALARM);
+            case R.id.nav_batch:
+                intent = new Intent(this, BatchActivity.class);
+                this.startActivity(intent);
                 break;
             default:
         }
@@ -145,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                             record.setFrom(String.valueOf(device.getMode()));
                             record.setTo(mode);
                             if(mode != null && !mode.equals(SettingManager.CLOSE_CODE)){
-                                device.setMode(Integer.parseInt(mode));
+                                device.setMode(mode);
                                 device.setOpen(true);
                                 device.setStart(CalendarUtil.getDate());
                                 device.setEnd(0);
@@ -246,9 +247,16 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             }
         }).start();
         deviceList.remove(deviceIndex);
-        indices.get(deviceIndex-1).setSelect(true);
-        indexItemAdapter.notifyItemChanged(deviceIndex-1);
-        handler.obtainMessage(REFRESH_CARDS).sendToTarget();
+        if(indices.size() > 0){
+            indices.get(0).setSelect(true);
+            indexItemAdapter.notifyItemChanged(0);
+            handler.obtainMessage(REFRESH_CARDS).sendToTarget();
+            handler.obtainMessage(SELECT_CARDS, 0).sendToTarget();
+        }else {
+            deviceList.add(new BlankFragment());
+            handler.obtainMessage(REFRESH_CARDS).sendToTarget();
+        }
+
     }
 
 
@@ -274,6 +282,10 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                     int number = (int) msg.obj;
                     deviceCards.setCurrentItem(number);
                     break;
+                case CONNECT_CALLBACK:
+                    String str = (String) msg.obj;
+                    ToastUtil.showShort(MainActivity.this, str);
+                    break;
                 default:
             }
             return true;
@@ -297,16 +309,16 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             public void onClick(View v) {
                 Device device = getSelectDevice();
                 if(null != device){
-                    if(!device.getAddress().equals(bleController.getAddress())){
-                        ToastUtil.showShort(v.getContext(), "该设备未连接");
-                        return;
-                    }
+//                    if(!device.getAddress().equals(btController.getAddress())){
+//                        ToastUtil.showShort(v.getContext(), "该设备未连接");
+//                        return;
+//                    }
                     if(getSelectDevice().isOpen()){
                         actionButton.setImageResource(R.drawable.animate_stop);
-                        sendCommand(SettingManager.CLOSE_CODE);
+                        sendCommand(device.getAddress(), SettingManager.CLOSE_CODE);
                     }else {
                         actionButton.setImageResource(R.drawable.animate_action);
-                        sendCommand(String.valueOf(device.getMode()));
+                        sendCommand(device.getAddress(), String.valueOf(device.getMode()));
                     }
                 }
             }
@@ -321,8 +333,8 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         indexList.setAdapter(indexItemAdapter);
 
         ViewPager pagerCards = findViewById(R.id.main_pager);
-        pagerList.add(new InfoFragment());
         pagerList.add(new ControlFragment());
+        pagerList.add(new InfoFragment());
         pagerAdapter = new PagerAdapter(this.getSupportFragmentManager(), pagerList);
         pagerCards.setAdapter(pagerAdapter);
         TabLayout pagerTable = findViewById(R.id.main_table);
@@ -407,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
      * @param name 蓝牙类型
      * @param address 蓝牙地址
      */
-    private void addDevice(String name, String address){
+    private void addDevice(String name, final String address){
 
         if(deviceMap.containsKey(address)){
             ToastUtil.showShort(MainActivity.this, "该设备已存在");
@@ -420,21 +432,22 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         device.setName("未命名设备");
         device.setCreate(CalendarUtil.getDate());
         device.setOpen(false);
-        device.setMode(Integer.parseInt(SettingManager.CLOSE_CODE));
+        device.setMode(SettingManager.CLOSE_CODE);
         device.setProgress(1000*60*60*8);
 
         //关闭原有连接
-        bleController.closeBleConnect();
+//        btController.closeConnect();
         //连接蓝牙
-        bleController.connect(device.getType(), 0, address, new ConnectCallback() {
+        btController.connect(this, device.getType(), address, new ConnectStateCallback() {
             @Override
-            public void onConnSuccess() {
-                ToastUtil.showShort(MainActivity.this, "成功添加蓝牙");
+            public void connectSucceed(String deviceAddress) {
+                if(!deviceAddress.equals(address))return;
+                handler.obtainMessage(CONNECT_CALLBACK, "成功添加蓝牙").sendToTarget();
 
                 addDeviceCard(device);
 
                 //关闭连接
-                bleController.closeBleConnect();
+                btController.closeConnect(address);
 
                 new Thread(new Runnable() {
                     @Override
@@ -450,9 +463,11 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
             }
 
             @Override
-            public void onConnFailed() {
-                ToastUtil.showShort(MainActivity.this, "无法添加蓝牙");
+            public void connectLost(String deviceAddress) {
+                if(!deviceAddress.equals(address))return;
+                handler.obtainMessage(CONNECT_CALLBACK, "无法添加蓝牙").sendToTarget();
             }
+
         });
     }
 
@@ -460,9 +475,9 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
      * 发送蓝牙指令
      * @param command 指令
      */
-    private void sendCommand(final String command){
+    private void sendCommand(String address, final String command){
         byte[] bytes = (command).getBytes();
-        bleController.writeBuffer(bytes, new OnWriteCallback() {
+        btController.writeBuffer(address, bytes, new OnWriteCallback() {
             @Override
             public void onSuccess() {
                 final Device device = getSelectDevice();
@@ -537,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
      * 初始化蓝牙控制器
      */
     private void initBleController(){
-        bleController = BleController.getInstance();
+        btController = BtManager.getBtController();
         //初始化蓝牙适配器
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(!bluetoothAdapter.isEnabled())bluetoothAdapter.enable();

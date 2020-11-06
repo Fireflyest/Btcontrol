@@ -1,4 +1,4 @@
-package com.fireflyest.btcontrol.api.callback;
+package com.fireflyest.btcontrol.bt.callback;
 
 /**
  * @Description： 连接回调

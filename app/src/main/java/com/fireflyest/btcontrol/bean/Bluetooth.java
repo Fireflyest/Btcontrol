@@ -10,11 +10,14 @@ public class Bluetooth {
 
     private int statue;
 
-    public Bluetooth(String name, short rssi, String address, int statue) {
+    private int type;
+
+    public Bluetooth(String name, short rssi, String address, int statue, int type) {
         this.name = name;
         this.rssi = rssi;
         this.address = address;
         this.statue = statue;
+        this.type = type;
     }
 
     public String getName() {
@@ -47,5 +50,13 @@ public class Bluetooth {
 
     public void setStatue(int statue) {
         this.statue = statue;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

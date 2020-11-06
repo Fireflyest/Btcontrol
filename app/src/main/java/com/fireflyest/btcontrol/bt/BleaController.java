@@ -1,4 +1,4 @@
-package com.fireflyest.btcontrol.api;
+package com.fireflyest.btcontrol.bt;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -15,22 +15,23 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.fireflyest.btcontrol.api.callback.ConnectCallback;
-import com.fireflyest.btcontrol.api.callback.OnReceiverCallback;
-import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
-import com.fireflyest.btcontrol.api.request.ReceiverRequestQueue;
+import com.fireflyest.btcontrol.bt.callback.ConnectCallback;
+import com.fireflyest.btcontrol.bt.callback.OnReceiverCallback;
+import com.fireflyest.btcontrol.bt.callback.OnWriteCallback;
+import com.fireflyest.btcontrol.bt.request.ReceiverRequestQueue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class BleController {
+public class BleaController implements BtaController {
 
     private static final String LOG_TAG = "BleController ";
 
     //BleController实例
     @SuppressLint("StaticFieldLeak")
-    private static BleController sBleManager;
+    private static BleaController sBleManager;
     private Context mContext;
 
     private BluetoothManager mBluetoothManager;
@@ -59,39 +60,38 @@ public class BleController {
     private ConnectCallback connectCallback;
     //读操作请求队列
     private ReceiverRequestQueue mReceiverRequestQueue = new ReceiverRequestQueue();
-    //此属性一般不用修改
-    private static final UUID BLUETOOTH_NOTIFY_D = UUID.fromString("00002901-0000-1000-8000-00805f9b34fb");
+    //接收数据uuid
+    private static final UUID BLUETOOTH_NOTIFY_D = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    //这里是TB02开发板提供的各种UUID，请勿修改（安信）
-    private String BLUETOOTH_S = "00010203-0405-0607-0809-0a0b0c0d1910";
-    private String BLUETOOTH_NOTIFY_C = "00010203-0405-0607-0809-0a0b0c0d2b10";
-
-//    private String BLUETOOTH_S = "0000ffe0-0000-1000-8000-00805f9b34fb";
-//    private String BLUETOOTH_NOTIFY_C = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    //服务uuid
+    private String BLUETOOTH_S;
+    //特征uuid
+    private String BLUETOOTH_NOTIFY_C;
 
 
     //-----------------------------  对外公开的方法 ----------------------------------------------
     /**
      * 获取BleController实例对象
      */
-    public synchronized static BleController getInstance() {
+    public synchronized static BleaController getInstance() {
         if (null == sBleManager) {
-            sBleManager = new BleController();
+            sBleManager = new BleaController();
         }
         return sBleManager;
     }
 
     public void setUUID(String type){
         switch (type){
-            case "MLT-BT05":
-                BLUETOOTH_S = "0000ffe0-0000-1000-8000-00805f9b34fb";
-                BLUETOOTH_NOTIFY_C = "0000ffe1-0000-1000-8000-00805f9b34fb";
-                break;
             case "Ai-Thinker":
                 BLUETOOTH_S = "00010203-0405-0607-0809-0a0b0c0d1910";
                 BLUETOOTH_NOTIFY_C = "00010203-0405-0607-0809-0a0b0c0d2b10";
                 break;
+            case "MLT-BT05":
+            case "HC-42":
             default:
+                BLUETOOTH_S = "0000ffe0-0000-1000-8000-00805f9b34fb";
+                BLUETOOTH_NOTIFY_C = "0000ffe1-0000-1000-8000-00805f9b34fb";
+                break;
         }
     }
 
@@ -99,6 +99,7 @@ public class BleController {
      * 进行初始化
      * @param context 环境
      */
+    @Override
     public void init(Context context) {
 
         this.enableNotify();
@@ -120,6 +121,7 @@ public class BleController {
      * @param connectionTimeOut 连接超时时间,默认是6秒.当赋值为0或更小值时用默认值
      * @param devicesAddress    想要连接的设备地址
      */
+    @Override
     public void connect(String type, final int connectionTimeOut, final String devicesAddress, ConnectCallback connectCallback) {
         this.setUUID(type);
 
@@ -150,6 +152,7 @@ public class BleController {
      * @param buf 字节
      * @param writeCallback 回调
      */
+    @Override
     public void writeBuffer(byte[] buf, OnWriteCallback writeCallback) {
         this.writeCallback = writeCallback;
         if (isEnable()) {
@@ -183,6 +186,7 @@ public class BleController {
      * @param requestKey 请求码
      * @param onReceiverCallback 回调
      */
+    @Override
     public void registerReceiveListener(String requestKey, OnReceiverCallback onReceiverCallback) {
         mReceiverRequestQueue.set(requestKey, onReceiverCallback);
     }
@@ -192,6 +196,7 @@ public class BleController {
      *
      * @param requestKey 请求码
      */
+    @Override
     public void unregisterReceiveListener(String requestKey) {
         mReceiverRequestQueue.removeRequest(requestKey);
     }
@@ -199,9 +204,14 @@ public class BleController {
     /**
      * 手动断开Ble连接
      */
-    public void closeBleConnect() {
+    @Override
+    public void closeConnect() {
         disConnection();
         isBreakByMyself = true;
+        if(null != mBluetoothGatt){
+            mBluetoothGatt.disconnect();
+            mBluetoothGatt.close();
+        }
         gattCharacteristic = null;
         mBluetoothManager = null;
         address = "";
@@ -211,6 +221,7 @@ public class BleController {
         this.notify = true;
     }
 
+    @Override
     public String getAddress() {
         return address;
     }
@@ -315,6 +326,14 @@ public class BleController {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (null == mBluetoothGatt || status != BluetoothGatt.GATT_SUCCESS) return;
 
+            for(BluetoothGattService service : mBluetoothGatt.getServices()){
+                Log.e(LOG_TAG, "\n--------------------------------------------"+"\n服务:"+service.getUuid() +"\n服务类型:"+service.getType()+"\n服务特征:"+service.getCharacteristics().size());
+                for(BluetoothGattCharacteristic characteristic : service.getCharacteristics()){
+                    Log.e(LOG_TAG, "\n特征:"+characteristic.getUuid()+"\nProperties:"+ characteristic.getProperties());
+                }
+                Log.e(LOG_TAG, "-");
+            }
+
             BluetoothGattService gattService = mBluetoothGatt.getService(UUID.fromString(BLUETOOTH_S));
             //遍历特征
             for(BluetoothGattCharacteristic characteristic : gattService.getCharacteristics()){
@@ -333,12 +352,13 @@ public class BleController {
         //收到数据
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic) {
-            if (null != mReceiverRequestQueue) {
+
+//            if (null != mReceiverRequestQueue) {
+                Log.e(LOG_TAG, "收到数据: "+ Arrays.toString(characteristic.getValue()));
                 HashMap<String, OnReceiverCallback> map = mReceiverRequestQueue.getMap();
                 final byte[] rec = characteristic.getValue();
-                for (String key : mReceiverRequestQueue.getMap().keySet()) {
-                    final OnReceiverCallback onReceiverCallback = map.get(key);
-                    if(onReceiverCallback == null)return;
+                for (final OnReceiverCallback onReceiverCallback: map.values()){
+                    if(onReceiverCallback == null)continue;
                     runOnMainThread(new Runnable() {
                         @Override
                         public void run() {
@@ -346,7 +366,16 @@ public class BleController {
                         }
                     });
                 }
-            }
+//                for (String key : mReceiverRequestQueue.getMap().keySet()) {
+//                    final OnReceiverCallback onReceiverCallback = map.get(key);
+//                    runOnMainThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            onReceiverCallback.onReceive(rec);
+//                        }
+//                    });
+//                }
+//            }
         }
 
         //描述符被写了

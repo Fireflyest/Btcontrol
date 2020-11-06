@@ -82,7 +82,20 @@ public class CommandItemAdapter extends RecyclerView.Adapter<CommandItemAdapter.
                 if(!command.isSuccess()) holder.right.setBackgroundResource(R.color.colorAccentDark);
                 break;
             case "System":
-                holder.system.setText(String.format("%s", command.getText()));
+                String system = command.getText();
+                if("#".equals(system)){
+                    long time = CalendarUtil.getDate() - command.getTime();
+                    if(time < 86400000){
+                        system = CalendarUtil.convertTime(command.getTime()).substring(6);
+                    }else if(time < 259200000){
+                        system = String.format("%s小时前", CalendarUtil.convertHour(command.getTime()));
+                    }else if(time < 604800000){
+                        system = String.format("%s天前", CalendarUtil.convertDay(command.getTime()));
+                    }else {
+                        system = "大于一周前";
+                    }
+                }
+                holder.system.setText(system);
                 holder.system.setVisibility(View.VISIBLE);
                 break;
             default:

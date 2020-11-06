@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.PrimaryKey;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,13 +12,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.fireflyest.btcontrol.adapter.ModeList.ModeItemAdapter;
-import com.fireflyest.btcontrol.api.BleController;
-import com.fireflyest.btcontrol.api.callback.OnWriteCallback;
+import com.fireflyest.btcontrol.bt.BleController;
+import com.fireflyest.btcontrol.bt.BtManager;
+import com.fireflyest.btcontrol.bt.callback.OnWriteCallback;
 import com.fireflyest.btcontrol.bean.Mode;
 import com.fireflyest.btcontrol.data.DataManager;
+import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.dialog.AddModeDialog;
 import com.fireflyest.btcontrol.util.StatusBarUtil;
 import com.fireflyest.btcontrol.util.ToastUtil;
@@ -159,7 +159,7 @@ public class ModeActivity extends AppCompatActivity implements AddModeDialog.Not
     }
 
     private void initBluetooth(){
-        controller = BleController.getInstance();
+        controller = (BleController) BtManager.getBtController();
     }
 
     /**
@@ -168,7 +168,7 @@ public class ModeActivity extends AppCompatActivity implements AddModeDialog.Not
      */
     private void sendCommand(final String command){
         byte[] bytes = (command).getBytes();
-        controller.writeBuffer(bytes, new OnWriteCallback() {
+        controller.writeBuffer(SettingManager.SELECT_ADDRESS, bytes, new OnWriteCallback() {
             @Override
             public void onSuccess() {
                 ToastUtil.showShort(getBaseContext(), "模式修改: "+command);

@@ -11,27 +11,25 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.transition.AutoTransition;
-import androidx.transition.Transition;
-import androidx.transition.TransitionManager;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.fireflyest.btcontrol.MainActivity;
 import com.fireflyest.btcontrol.R;
-import com.fireflyest.btcontrol.api.BleController;
-import com.fireflyest.btcontrol.api.callback.ConnectCallback;
+import com.fireflyest.btcontrol.bt.BtController;
+import com.fireflyest.btcontrol.bt.BtManager;
+import com.fireflyest.btcontrol.bt.callback.ConnectCallback;
 import com.fireflyest.btcontrol.bean.Device;
+import com.fireflyest.btcontrol.bt.callback.ConnectStateCallback;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
-import com.fireflyest.btcontrol.dialog.AddModeDialog;
 import com.fireflyest.btcontrol.dialog.EditDeviceDialog;
 import com.fireflyest.btcontrol.util.AnimateUtil;
 import com.fireflyest.btcontrol.util.ReflectUtils;
@@ -45,15 +43,15 @@ public class DeviceFragment extends Fragment {
 
     private ImageButton connectState;
 
-    private boolean enable = false;
-
     private String address;
     private String name;
     private String type;
     private long progress;
     private long create;
 
-    private BleController bleController;
+    private boolean enable = true;
+
+    private BtController btController;
 
     private TextView connectButton;
 
@@ -90,12 +88,20 @@ public class DeviceFragment extends Fragment {
             address = getArguments().getString(KEY_ADDRESS);
             this.refreshDevice(address);
         }
-        bleController = BleController.getInstance();
+        btController = BtManager.getBtController();
 
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
+
+        handler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                ToastUtil.showShort(view.getContext(), msg.obj.toString());
+                return true;
+            }
+        });
 
         connectButton = view.findViewById(R.id.main_device_connect);
         TextView editButton = view.findViewById(R.id.main_device_edit);
@@ -119,19 +125,24 @@ public class DeviceFragment extends Fragment {
                 ToastUtil.showShort(getContext(), "连接中...");
 
                 //连接蓝牙
-                bleController.connect(type, 6000, address, new ConnectCallback() {
+                btController.connect(v.getContext(), type, address, new ConnectStateCallback() {
                     @Override
-                    public void onConnSuccess() {
-                        ToastUtil.showShort(getContext(), "成功连接");
+                    public void connectSucceed(String deviceAddress) {
+                        if(!deviceAddress.equals(address))return;
+                        handler.obtainMessage(0, "成功连接").sendToTarget();
                         ((AnimatedVectorDrawable)connectState.getDrawable()).start();
                         AnimateUtil.hide(connectButton, 300, 0);
+
                     }
 
                     @Override
-                    public void onConnFailed() {
-                        ToastUtil.showShort(getContext(), "连接断开");
+                    public void connectLost(String deviceAddress) {
+                        if(!deviceAddress.equals(address))return;
+                        handler.obtainMessage(0, "连接断开").sendToTarget();
                         AnimateUtil.show(connectButton, 300, 0);
+                        connectState.setImageResource(R.drawable.animate_connect);
                     }
+
                 });
 
             }
@@ -163,6 +174,12 @@ public class DeviceFragment extends Fragment {
             }
         }
 
+        if(enable){
+            Animation animation = AnimationUtils.loadAnimation(view.getContext(), R.anim.item_animation_from_bottom);
+            view.startAnimation(animation);
+            enable = false;
+        }
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -179,6 +196,7 @@ public class DeviceFragment extends Fragment {
 
         if(this.isConnect()){
             ((AnimatedVectorDrawable)connectState.getDrawable()).start();
+            if(connectButton.getVisibility() == View.VISIBLE) AnimateUtil.hide(connectButton, 300, 0);
         }else {
             connectState.setImageResource(R.drawable.animate_connect);
             if(connectButton.getVisibility() == View.GONE) AnimateUtil.show(connectButton, 300, 0);
@@ -189,11 +207,9 @@ public class DeviceFragment extends Fragment {
 
     //------------------------------------------------------------------------
 
+    private Handler handler;
 
     private boolean isConnect(){
-        //目前连接地址
-        String connecting = BleController.getInstance().getAddress();
-        if(!connecting.equals(address))return false;
         //蓝牙连接状态
         BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
         if(device != null) return ReflectUtils.invokeIs(device, "connected");

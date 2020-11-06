@@ -12,7 +12,7 @@ public class PagerAdapter extends FragmentPagerAdapter {
 
     private List<Fragment> fragmentList;
 
-    private static String[] title = {"信息", "控制"};
+    private static String[] title = {"控制", "信息"};
 
     public PagerAdapter(FragmentManager fm, List<Fragment> fragmentList) {
         super(fm);

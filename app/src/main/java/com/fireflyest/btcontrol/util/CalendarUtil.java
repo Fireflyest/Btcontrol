@@ -76,6 +76,10 @@ public class CalendarUtil {
         return String.valueOf(date/1000/60/60);
     }
 
+    public static String convertDay(long date){
+        return String.valueOf(date/1000/60/60/24);
+    }
+
     public static String getTimeNow(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(sdf, Locale.CHINA);
         return simpleDateFormat.format(getDate());

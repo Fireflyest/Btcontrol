@@ -17,11 +17,18 @@
             app:title="蓝牙筛选"
             app:defaultValue="false" />
 
+        <ListPreference
+            app:key="type_connect"
+            app:title="连接类型"
+            android:entries="@array/str_type_array"
+            android:entryValues="@array/int_type_array"
+            android:defaultValue="0"/>
+
         <EditTextPreference
             app:key="close_code"
             app:title="关闭编码"
-            app:dialogMessage="清输入非零数字编码"
-            app:defaultValue="300" />
+            app:dialogMessage="清输入关闭所需发送的编码"
+            app:defaultValue="CLOSE" />
 
     </PreferenceCategory>
 

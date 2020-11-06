@@ -12,6 +12,7 @@ import androidx.transition.TransitionManager;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,7 +20,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.TextView;
 
-import com.fireflyest.btcontrol.api.BleController;
+import com.fireflyest.btcontrol.bt.BtManager;
 import com.fireflyest.btcontrol.data.DataManager;
 import com.fireflyest.btcontrol.data.SettingManager;
 import com.fireflyest.btcontrol.util.StatusBarUtil;
@@ -42,6 +43,7 @@ public class LaunchActivity extends AppCompatActivity {
     private TextView launchName;
 
     private boolean permission = false;
+    private boolean close = false;
 
     private ConstraintSet launchSet = new ConstraintSet();
 
@@ -58,12 +60,13 @@ public class LaunchActivity extends AppCompatActivity {
         DataManager.getInstance().initDataManager(this);
 
         //初始化设置
-        SettingManager.getInstance().initSettingManager(
-                PreferenceManager.getDefaultSharedPreferences(this)
-        );
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SettingManager.getInstance().initSettingManager(sharedPreferences);
 
         //初始化蓝牙控制器
-        BleController.getInstance().init(this);
+        String type =  sharedPreferences.getString("type_connect", "0");
+        if(type == null) type = "0";
+        BtManager.init(Integer.parseInt(type), this);
 
         //申请权限
         this.requestPermission();
@@ -73,19 +76,6 @@ public class LaunchActivity extends AppCompatActivity {
 
         launchName = findViewById(R.id.launch_name);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //已有权限直接开启主界面
-                    handler.obtainMessage(START_ANIMATION).sendToTarget();
-                    sleep(800);
-                    if(permission) handler.obtainMessage(START_ACTIVITY).sendToTarget();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
     @Override
@@ -112,7 +102,6 @@ public class LaunchActivity extends AppCompatActivity {
                 launchName.setVisibility(View.VISIBLE);
                 launchSet.setVisibility(R.id.launch_logo, ConstraintSet.VISIBLE);
                 launchSet.applyTo(launchBox);
-
             }
             return true;
         }
@@ -135,5 +124,32 @@ public class LaunchActivity extends AppCompatActivity {
         }
     }
 
+    private synchronized void startMain(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //已有权限直接开启主界面
+                    handler.obtainMessage(START_ANIMATION).sendToTarget();
+                    sleep(800);
+                    if(permission && !close) handler.obtainMessage(START_ACTIVITY).sendToTarget();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
+    @Override
+    protected void onResume() {
+        this.close = false;
+        this.startMain();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        this.close = true;
+        super.onPause();
+    }
 }
