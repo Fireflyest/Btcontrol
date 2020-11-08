@@ -67,6 +67,8 @@ public class Device {
      */
     private boolean open;
 
+    private boolean display;
+
     public Device() {
         address = "";
     }
@@ -158,5 +160,13 @@ public class Device {
 
     public void setOpen(boolean open) {
         this.open = open;
+    }
+
+    public boolean isDisplay() {
+        return display;
+    }
+
+    public void setDisplay(boolean display) {
+        this.display = display;
     }
 }

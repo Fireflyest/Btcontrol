@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
     private BtController btController;
 
     private Map<String, Device> deviceMap = new LinkedHashMap<>();
+    private List<String > addressList = new ArrayList<>();
     private List<Index> indices = new ArrayList<>();
     private int deviceIndex = 0;
 
@@ -185,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 List<Device> devices = dataManager.getDeviceDao().getAll();
                 String address = SettingManager.SELECT_ADDRESS;
                 for(Device device : devices){
+                    addressList.add(device.getAddress());
+                    if(!device.isDisplay())continue;
                     try {
                         sleep(1000);
                     } catch (InterruptedException e) {
@@ -241,7 +244,11 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         new Thread(new Runnable() {
             @Override
             public void run() {
-                dataManager.getDeviceDao().delete(deviceMap.get(SettingManager.SELECT_ADDRESS));
+                Device device = deviceMap.get(SettingManager.SELECT_ADDRESS);
+                if(device != null) {
+                    device.setDisplay(false);
+                    dataManager.getDeviceDao().updateAll(device);
+                }
                 deviceMap.remove(SettingManager.SELECT_ADDRESS);
                 settingManager.setStringPreference("select_address", "none");
             }
@@ -421,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
      */
     private void addDevice(String name, final String address){
 
-        if(deviceMap.containsKey(address)){
+        if(addressList.contains(address)){
             ToastUtil.showShort(MainActivity.this, "该设备已存在");
             return;
         }
@@ -434,6 +441,7 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
         device.setOpen(false);
         device.setMode(SettingManager.CLOSE_CODE);
         device.setProgress(1000*60*60*8);
+        device.setDisplay(true);
 
         //关闭原有连接
 //        btController.closeConnect();
@@ -518,6 +526,10 @@ public class MainActivity extends AppCompatActivity implements EditDeviceDialog.
                 ToastUtil.showShort(getBaseContext(), "切换失败");
             }
         });
+    }
+
+    private void loadDevice(){
+
     }
 
     /**

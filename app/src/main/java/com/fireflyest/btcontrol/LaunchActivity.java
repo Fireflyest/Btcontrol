@@ -96,6 +96,7 @@ public class LaunchActivity extends AppCompatActivity {
         public boolean handleMessage(@NonNull Message msg) {
             if(msg.what == START_ACTIVITY){
                 startActivity(new Intent(LaunchActivity.this, MainActivity.class));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             }else if (msg.what == START_ANIMATION){
                 TransitionManager.beginDelayedTransition(launchBox, transition);

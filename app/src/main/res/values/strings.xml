@@ -40,6 +40,8 @@
     <string name="menu_bluetooth">蓝牙</string>
     <string name="menu_setting">设置</string>
     <string name="menu_batch">批量</string>
+    <string name="menu_all">全选</string>
+    <string name="menu_invert">反选</string>
 
     <string name="control_command">指令</string>
     <string name="control_mode">模式</string>
@@ -52,7 +54,7 @@
     <string name="control_record">记录</string>
 
     <string name="command_send">发送</string>
-    <string name="command_check">循环发送</string>
+    <string name="command_check">循环</string>
     <string name="command_delay">间隔(ms)</string>
     <string name="command_clear">清理窗口</string>
 

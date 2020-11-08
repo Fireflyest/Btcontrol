@@ -51,7 +51,7 @@
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@+id/connect_connected_name"
             app:layout_constraintStart_toStartOf="parent"
-            android:layoutAnimation="@anim/layout_animation_slide_right"
+            android:layoutAnimation="@anim/layout_animation_from_bottom"
             android:text="@string/connect_connected_address"/>
 
         <ImageButton
